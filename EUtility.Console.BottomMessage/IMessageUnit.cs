@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace EUtility.Console.BottomMessage;
 
-namespace EUtility.Console.BottomMessage
+public interface IMessageUnit
 {
-    internal interface IMessageUnit
-    {
-    }
+    /// <summary>
+    /// Message unit's title
+    /// </summary>
+    string Title { get; set; }
+
+    /// <summary>
+    /// Message unit's description
+    /// </summary>
+    string Description { get; set; }
 }
