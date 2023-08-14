@@ -1,14 +1,14 @@
-﻿namespace EUtility.Console.BottomMessage;
+﻿namespace EUtility.Console.Message;
 
 public interface IMessageUnit
 {
     /// <summary>
     /// Message unit's title
     /// </summary>
-    string Title { get; set; }
+    public string Title { get; set; }
 
     /// <summary>
     /// Message unit's description
     /// </summary>
-    string Description { get; set; }
+    public string Description { get; set; }
 }

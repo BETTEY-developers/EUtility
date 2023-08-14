@@ -1,8 +1,7 @@
 ﻿using System.Collections;
-using System.Text;
 using SConsole = System.Console;
 
-namespace EUtility.Console.BottomMessage;
+namespace EUtility.Console.Message;
 
 public class MessageOutputer : IMessageOutputer
 {
@@ -17,8 +16,8 @@ public class MessageOutputer : IMessageOutputer
         /// <param name="messageunits">Need format message unit collection.</param>
         /// <returns>
         /// Formated message string. 
-        /// One unit be like: <code>unit: $"{title} {description}"</code>. 
-        /// A complete string be like:<code>$"{unit}(4 white space){next unit}"</code>
+        /// One unit be like: {title} {description}.
+        /// A complete string be like: {unit}(4 white space){next unit}.
         /// </returns>
         public string FormatMessage(ICollection<IMessageUnit> messageunits)
         {
@@ -32,7 +31,7 @@ public class MessageOutputer : IMessageOutputer
     }
 
     // ** private message unit collection **
-    ICollection<IMessageUnit> messageUnits;
+    ICollection<IMessageUnit> _messageUnits;
 
     // ** private enumer current item **
     IMessageUnit? _current;
@@ -40,15 +39,18 @@ public class MessageOutputer : IMessageOutputer
     // ** private enumer current item index **
     int _currentindex = -1;
 
+    // ** private formatter static instance
+    MessageOutputer.MessageFormater _messageFormater = new();
+
     /// <summary>
     /// Message units collection count.
     /// </summary>
-    int ICollection<IMessageUnit>.Count => messageUnits.Count;
+    public int Count => _messageUnits.Count;
 
     /// <summary>
     /// Is read-only (this property is clearful, you need read this doc?)
     /// </summary>
-    bool ICollection<IMessageUnit>.IsReadOnly => messageUnits.IsReadOnly;
+    public bool IsReadOnly => _messageUnits.IsReadOnly;
 
     /// <summary>
     /// Enumer current element.
@@ -66,7 +68,7 @@ public class MessageOutputer : IMessageOutputer
     /// <param name="messageUnits"><see cref="IMessageUnit"/> object collection.</param>
     public MessageOutputer(ICollection<IMessageUnit> messageUnits)
     {
-        this.messageUnits = messageUnits;
+        this._messageUnits = messageUnits;
     }
 
     /// <summary>
@@ -74,7 +76,7 @@ public class MessageOutputer : IMessageOutputer
     /// </summary>
     public MessageOutputer()
     {
-        messageUnits = new List<IMessageUnit>();
+        _messageUnits = new List<IMessageUnit>();
     }
 
     /// <summary>
@@ -82,20 +84,22 @@ public class MessageOutputer : IMessageOutputer
     /// </summary>
     /// <param name="item">The item to add to the message unit collection.</param>
     /// <exception cref="NotSupportedException"> The collection is read-only.</exception>
-    void ICollection<IMessageUnit>.Add(IMessageUnit item) => messageUnits.Add(item);
+    public void Add(IMessageUnit item) => _messageUnits.Add(item);
 
     /// <summary>
     /// Removes all items from the collection.
     /// </summary>
     /// <exception cref="NotSupportedException"> The collection is read-only.</exception>
-    void ICollection<IMessageUnit>.Clear() => messageUnits.Clear();
+    public void Clear() => _messageUnits.Clear();
 
     /// <summary>
     /// Determines whether the collection contains a specific value.
     /// </summary>
     /// <param name="item">The <see cref="IMessageUnit"/> object to locate in the collection</param>
     /// <returns><see cref="true"/> if item is found in the collection; otherwise, <see cref="false"/>.</returns>
-    bool ICollection<IMessageUnit>.Contains(IMessageUnit item) => messageUnits.Contains(item);
+    
+
+    public bool Contains(IMessageUnit item) => _messageUnits.Contains(item);
 
     /// <summary>
     /// Copies the elements of the collection to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
@@ -105,7 +109,7 @@ public class MessageOutputer : IMessageOutputer
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is <see cref="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
     /// <exception cref="ArgumentException">The number of elements in the source collection is greater than the available space from <paramref name="arrayIndex"/> to the end of the destination <paramref name="array"/>.</exception>
-    void ICollection<IMessageUnit>.CopyTo(IMessageUnit[] array, int arrayIndex) => messageUnits.CopyTo(array, arrayIndex);
+    public void CopyTo(IMessageUnit[] array, int arrayIndex) => _messageUnits.CopyTo(array, arrayIndex);
 
     /// <summary>
     /// Removes the first occurrence of a <see cref="IMessageUnit"/> object from the collection.
@@ -113,11 +117,12 @@ public class MessageOutputer : IMessageOutputer
     /// <param name="item"></param>
     /// <returns><see cref="true"/>if <paramref name="item"/> was successfully removed from the collection; otherwise, <see cref="false"/>. This method also returns <see cref="false"/> if <paramref name="item"/> is not found in the original collection.</returns>
     /// <exception cref="NotSupportedException"> The collection is read-only.</exception>
-    bool ICollection<IMessageUnit>.Remove(IMessageUnit item) => messageUnits.Remove(item);
+    public bool Remove(IMessageUnit item) => _messageUnits.Remove(item);
+
 
     IEnumerator<IMessageUnit> IEnumerable<IMessageUnit>.GetEnumerator()
     {
-        foreach(var v in messageUnits)
+        foreach(var v in _messageUnits)
         {
             _currentindex++;
             _current = v;
@@ -129,7 +134,7 @@ public class MessageOutputer : IMessageOutputer
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        foreach (var v in messageUnits)
+        foreach (var v in _messageUnits)
         {
             _currentindex++;
             _current = v;
@@ -150,25 +155,28 @@ public class MessageOutputer : IMessageOutputer
         _currentindex = -1;
     }
 
-    void IDisposable.Dispose()
+    public void Dispose()
     {
         GC.SuppressFinalize(this);
     }
 
-    void IMessageOutputer.Write()
+    /// <summary>
+    /// Use <see cref="MessageOutputer.MessageFormater"/> formater write message at console bottom(<see cref="System.Console.BufferHeight"/> - 1)
+    /// </summary>
+    public void Write()
     {
-        (int currentCurPosX, int currentCurPosY) = SConsole.GetCursorPosition();
-        SConsole.SetCursorPosition(0, SConsole.BufferHeight - 1);
-        SConsole.Write(new MessageFormater().FormatMessage(messageUnits));
-        SConsole.SetCursorPosition(currentCurPosX, currentCurPosY);
+        Write(_messageFormater);
     }
 
-
+    /// <summary>
+    /// Use custom formater write message at console's bottom(<see cref="System.Console.BufferHeight"/> - 1)
+    /// </summary>
+    /// <param name="messageFormater">Custom message formater</param>
     public void Write(IMessageFormater messageFormater)
     {
         (int currentCurPosX, int currentCurPosY) = SConsole.GetCursorPosition();
         SConsole.SetCursorPosition(0, SConsole.BufferHeight - 1);
-        SConsole.Write(messageFormater.FormatMessage(messageUnits));
+        SConsole.Write(messageFormater.FormatMessage(_messageUnits));
         SConsole.SetCursorPosition(currentCurPosX, currentCurPosY);
     }
 }

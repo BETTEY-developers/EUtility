@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace EUtility.Console.Message;
 
-namespace EUtility.Console.BottomMessage
+public interface IMessageFormater
 {
-    public interface IMessageFormater
-    {
-        /// <summary>
-        /// Custom format message units.
-        /// </summary>
-        /// <param name="messageunits">Need format message unit collection.</param>
-        /// <returns>Formated message string.</returns>
-        string FormatMessage(ICollection<IMessageUnit> messageunits);
-    }
+    /// <summary>
+    /// Custom format message units.
+    /// </summary>
+    /// <param name="messageunits">Need format message unit collection.</param>
+    /// <returns>Formated message string.</returns>
+    public string FormatMessage(ICollection<IMessageUnit> messageunits);
 }
