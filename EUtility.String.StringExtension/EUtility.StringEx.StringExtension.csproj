@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EUtility.Console.BottomMessage\EUtility.Console.Message.csproj" />
+    <PackageReference Include="NullLib.ConsoleEx" Version="1.0.4.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EUtility.ConvertEx.Convert\EUtility.ConvertEx.Convert.csproj" />
   </ItemGroup>
 
 </Project>

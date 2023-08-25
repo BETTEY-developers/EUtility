@@ -1,14 +1,15 @@
-﻿using System.Collections;
+﻿using EUtility.StringEx.StringExtension;
+using System.Collections;
 using SConsole = System.Console;
 
-namespace EUtility.Console.Message;
+namespace EUtility.ConsoleEx.Message;
 
 public class MessageOutputer : IMessageOutputer
 {
     /// <summary>
     /// Default message string formater.
     /// </summary>
-    public class MessageFormater : IMessageFormater
+    public class MessageFormater : IMessageFormatter
     {
         /// <summary>
         /// Format message unit.
@@ -30,8 +31,8 @@ public class MessageOutputer : IMessageOutputer
         }
     }
 
-    // ** private message unit collection **
-    ICollection<IMessageUnit> _messageUnits;
+    // ** protected message unit collection **
+    protected ICollection<IMessageUnit> _messageUnits;
 
     // ** private enumer current item **
     IMessageUnit? _current;
@@ -39,18 +40,18 @@ public class MessageOutputer : IMessageOutputer
     // ** private enumer current item index **
     int _currentindex = -1;
 
-    // ** private formatter static instance
-    MessageOutputer.MessageFormater _messageFormater = new();
+    // ** protected formatter static instance
+    protected MessageOutputer.MessageFormater _messageFormater = new();
 
     /// <summary>
     /// Message units collection count.
     /// </summary>
-    public int Count => _messageUnits.Count;
+    public virtual int Count => _messageUnits.Count;
 
     /// <summary>
     /// Is read-only (this property is clearful, you need read this doc?)
     /// </summary>
-    public bool IsReadOnly => _messageUnits.IsReadOnly;
+    public virtual bool IsReadOnly => _messageUnits.IsReadOnly;
 
     /// <summary>
     /// Enumer current element.
@@ -84,22 +85,22 @@ public class MessageOutputer : IMessageOutputer
     /// </summary>
     /// <param name="item">The item to add to the message unit collection.</param>
     /// <exception cref="NotSupportedException"> The collection is read-only.</exception>
-    public void Add(IMessageUnit item) => _messageUnits.Add(item);
+    public virtual void Add(IMessageUnit item) => _messageUnits.Add(item);
 
     /// <summary>
     /// Removes all items from the collection.
     /// </summary>
     /// <exception cref="NotSupportedException"> The collection is read-only.</exception>
-    public void Clear() => _messageUnits.Clear();
+    public virtual void Clear() => _messageUnits.Clear();
 
     /// <summary>
     /// Determines whether the collection contains a specific value.
     /// </summary>
     /// <param name="item">The <see cref="IMessageUnit"/> object to locate in the collection</param>
     /// <returns><see cref="true"/> if item is found in the collection; otherwise, <see cref="false"/>.</returns>
-    
 
-    public bool Contains(IMessageUnit item) => _messageUnits.Contains(item);
+
+    public virtual bool Contains(IMessageUnit item) => _messageUnits.Contains(item);
 
     /// <summary>
     /// Copies the elements of the collection to an <see cref="Array"/>, starting at a particular <see cref="Array"/> index.
@@ -109,7 +110,7 @@ public class MessageOutputer : IMessageOutputer
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is <see cref="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
     /// <exception cref="ArgumentException">The number of elements in the source collection is greater than the available space from <paramref name="arrayIndex"/> to the end of the destination <paramref name="array"/>.</exception>
-    public void CopyTo(IMessageUnit[] array, int arrayIndex) => _messageUnits.CopyTo(array, arrayIndex);
+    public virtual void CopyTo(IMessageUnit[] array, int arrayIndex) => _messageUnits.CopyTo(array, arrayIndex);
 
     /// <summary>
     /// Removes the first occurrence of a <see cref="IMessageUnit"/> object from the collection.
@@ -117,7 +118,7 @@ public class MessageOutputer : IMessageOutputer
     /// <param name="item"></param>
     /// <returns><see cref="true"/>if <paramref name="item"/> was successfully removed from the collection; otherwise, <see cref="false"/>. This method also returns <see cref="false"/> if <paramref name="item"/> is not found in the original collection.</returns>
     /// <exception cref="NotSupportedException"> The collection is read-only.</exception>
-    public bool Remove(IMessageUnit item) => _messageUnits.Remove(item);
+    public virtual bool Remove(IMessageUnit item) => _messageUnits.Remove(item);
 
 
     IEnumerator<IMessageUnit> IEnumerable<IMessageUnit>.GetEnumerator()
@@ -163,7 +164,7 @@ public class MessageOutputer : IMessageOutputer
     /// <summary>
     /// Use <see cref="MessageOutputer.MessageFormater"/> formater write message at console bottom(<see cref="System.Console.BufferHeight"/> - 1)
     /// </summary>
-    public void Write()
+    public virtual void Write()
     {
         Write(_messageFormater);
     }
@@ -172,11 +173,12 @@ public class MessageOutputer : IMessageOutputer
     /// Use custom formater write message at console's bottom(<see cref="System.Console.BufferHeight"/> - 1)
     /// </summary>
     /// <param name="messageFormater">Custom message formater</param>
-    public void Write(IMessageFormater messageFormater)
+    public virtual void Write(IMessageFormatter messageFormater)
     {
-        (int currentCurPosX, int currentCurPosY) = SConsole.GetCursorPosition();
-        SConsole.SetCursorPosition(0, SConsole.BufferHeight - 1);
-        SConsole.Write(messageFormater.FormatMessage(_messageUnits));
+        (int currentCurPosX, int currentCurPosY) = Console.GetCursorPosition();
+        SConsole.SetCursorPosition(0, Console.BufferHeight - 1);
+        string ms = messageFormater.FormatMessage(_messageUnits);
+        SConsole.Write(ms + new string(' ',Console.BufferWidth - ms.GetStringInConsoleGridWidth()));
         SConsole.SetCursorPosition(currentCurPosX, currentCurPosY);
     }
 }

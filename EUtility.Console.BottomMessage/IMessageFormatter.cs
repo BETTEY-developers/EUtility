@@ -1,6 +1,6 @@
-﻿namespace EUtility.Console.Message;
+﻿namespace EUtility.ConsoleEx.Message;
 
-public interface IMessageFormater
+public interface IMessageFormatter
 {
     /// <summary>
     /// Custom format message units.

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
-namespace EUtility.Console.Menu
+namespace EUtility.ConsoleEx.Menu
 {
     public class MenuItem : IMenuItem
     {
@@ -27,52 +28,105 @@ namespace EUtility.Console.Menu
         }
     }
 
-    public class MenuItemCollection : IMenuItemCollection
-    {
-        List<IMenuItem>? item;
-
-        IMenuItem IList<IMenuItem>.this[int index] { get => item[index]; set => item[index] = value; }
-
-        int ICollection<IMenuItem>.Count => item.Count;
-
-        bool ICollection<IMenuItem>.IsReadOnly => false;
-
-        void ICollection<IMenuItem>.Add(IMenuItem item) => this.item.Add(item);
-
-        void ICollection<IMenuItem>.Clear() => item.Clear();
-
-        bool ICollection<IMenuItem>.Contains(IMenuItem item) => this.item.Contains(item);
-
-        void ICollection<IMenuItem>.CopyTo(IMenuItem[] array, int arrayIndex) => this.item.CopyTo(array, arrayIndex);
-
-        IEnumerator<IMenuItem> IEnumerable<IMenuItem>.GetEnumerator() => this.item.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => this.item.GetEnumerator();
-
-        int IList<IMenuItem>.IndexOf(IMenuItem item) => this.item.IndexOf(item);
-
-        void IList<IMenuItem>.Insert(int index, IMenuItem item) => this.item.Insert(index, item);
-
-        bool ICollection<IMenuItem>.Remove(IMenuItem item) => this.item.Remove(item);
-
-        void IList<IMenuItem>.RemoveAt(int index) => this.item.RemoveAt(index);
-    }
-
     public class Menu : IMenu
     {
-        private IMenuItemCollection? items;
-        private IMenuItem 
+        private Dictionary<string,KeyValuePair<IMenuItem,Action<IMenu,string>>>? _items;
+        private IMenuItem? _selecteditem;
+        private int _selectedindex = 0;
+        private KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>> _current;
 
-        IMenuItemCollection? IMenu.Item => throw new NotImplementedException();
+        public KeyValuePair<IMenuItem, Action<IMenu, string>> this[string key] { get => _items[key]; set => throw new NotImplementedException(); }
 
-        IMenuItem? IMenu.SelectedItem => throw new NotImplementedException();
+        public IMenuItem? SelectedItem => _selecteditem;
 
-        void IMenu.Select(int index)
+        public ICollection<string> Keys => _items.Keys;
+
+        public ICollection<KeyValuePair<IMenuItem, Action<IMenu, string>>> Values => _items.Values;
+
+        public int Count => _items.Count;
+
+        public bool IsReadOnly => false;
+
+        public KeyValuePair<string,KeyValuePair<IMenuItem, Action<IMenu, string>>> Current => _current;
+
+        object IEnumerator.Current => _current;
+
+        public void Add(string key, KeyValuePair<IMenuItem, Action<IMenu, string>> value)
+        {
+            _items.Add(key, value);
+        }
+
+        public void Add(KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>> item)
+        {
+            _items.Add(item.Key, item.Value);
+        }
+
+        public void Clear()
+        {
+            _items.Clear();
+        }
+
+        public bool Contains(KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>> item)
+        {
+            _items.Contains(item);
+        }
+
+        public bool ContainsKey(string key)
+        {
+            _items.ContainsKey(key);
+        }
+
+        public void CopyTo(KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>>[] array, int arrayIndex)
+        {
+            
+        }
+
+        public void Dispose()
         {
             throw new NotImplementedException();
         }
 
-        void IMenu.UserInputSelect()
+        public IEnumerator<KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>>> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool MoveNext()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>> item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Select(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out KeyValuePair<IMenuItem, Action<IMenu, string>> value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UserInputSelect()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
         }

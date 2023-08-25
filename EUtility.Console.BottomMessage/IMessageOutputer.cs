@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace EUtility.Console.Message;
+namespace EUtility.ConsoleEx.Message;
 
 public interface IMessageOutputer : ICollection<IMessageUnit>, IEnumerable<IMessageUnit>, IEnumerator<IMessageUnit>, IEnumerable, IEnumerator
 {
@@ -8,7 +8,7 @@ public interface IMessageOutputer : ICollection<IMessageUnit>, IEnumerable<IMess
     /// Write message string with a message string formater.
     /// </summary>
     /// <param name="messageFormater">Will use message string formater.</param>
-    public void Write(IMessageFormater messageFormater);
+    public void Write(IMessageFormatter messageFormater);
 
     /// <summary>
     /// Write message string.

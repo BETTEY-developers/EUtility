@@ -9,15 +9,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{D2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{73AE900D-FA4C-4270-BB95-45D792DA5410}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Console.Message", "EUtility.Console.BottomMessage\EUtility.Console.Message.csproj", "{69DCA039-C79D-4E1E-BDF5-EAA00D54A14B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Message", "EUtility.Console.BottomMessage\EUtility.ConsoleEx.Message.csproj", "{69DCA039-C79D-4E1E-BDF5-EAA00D54A14B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Console.Menu", "EUtility\EUtility.Console.Menu.csproj", "{55DEF277-300B-40C6-8C69-8FEC98610643}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Menu", "EUtility\EUtility.ConsoleEx.Menu.csproj", "{55DEF277-300B-40C6-8C69-8FEC98610643}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EUtility.Console.Message.UnitTest", "EUtility.Console.BottomMessage.UnitTest\EUtility.Console.Message.UnitTest.csproj", "{3B23908B-4ECE-4CCC-A5C2-AC7455E666EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Message.UnitTest", "EUtility.Console.BottomMessage.UnitTest\EUtility.ConsoleEx.Message.UnitTest.csproj", "{3B23908B-4ECE-4CCC-A5C2-AC7455E666EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTestLib", "UnitTestLib", "{6C624FEB-2B77-4B43-9144-720566ECD3F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EUtility.UnitTestLib.LogTest", "EUtility.UnitTestLib.LogTest\EUtility.UnitTestLib.LogTest.csproj", "{9EB3AAA2-5171-4DAA-8564-5052F68CA401}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.UnitTestLib.LogTest", "EUtility.UnitTestLib.LogTest\EUtility.UnitTestLib.LogTest.csproj", "{9EB3AAA2-5171-4DAA-8564-5052F68CA401}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.UnitTestLib.ObjectProperty", "EUtility.UnitTestLib.ObjectProperty\EUtility.UnitTestLib.ObjectProperty.csproj", "{2E8E4E05-8D95-4B15-9ADC-91E695794862}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "String", "String", "{A93AFC75-089F-43C9-8ED3-2B1589715566}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.StringEx.StringExtension", "EUtility.String.StringExtension\EUtility.StringEx.StringExtension.csproj", "{747EAF00-E8AF-4D49-9918-C4B5D901693E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Convert", "Convert", "{9841C93B-6235-45A9-9A21-C99E46079EED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EUtility.ConvertEx.Convert", "EUtility.ConvertEx.Convert\EUtility.ConvertEx.Convert.csproj", "{3A5505AA-0C58-445F-9F26-140D0F099B2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +51,18 @@ Global
 		{9EB3AAA2-5171-4DAA-8564-5052F68CA401}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB3AAA2-5171-4DAA-8564-5052F68CA401}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EB3AAA2-5171-4DAA-8564-5052F68CA401}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E8E4E05-8D95-4B15-9ADC-91E695794862}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E8E4E05-8D95-4B15-9ADC-91E695794862}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E8E4E05-8D95-4B15-9ADC-91E695794862}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E8E4E05-8D95-4B15-9ADC-91E695794862}.Release|Any CPU.Build.0 = Release|Any CPU
+		{747EAF00-E8AF-4D49-9918-C4B5D901693E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{747EAF00-E8AF-4D49-9918-C4B5D901693E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{747EAF00-E8AF-4D49-9918-C4B5D901693E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{747EAF00-E8AF-4D49-9918-C4B5D901693E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A5505AA-0C58-445F-9F26-140D0F099B2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A5505AA-0C58-445F-9F26-140D0F099B2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A5505AA-0C58-445F-9F26-140D0F099B2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A5505AA-0C58-445F-9F26-140D0F099B2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +74,9 @@ Global
 		{55DEF277-300B-40C6-8C69-8FEC98610643} = {73AE900D-FA4C-4270-BB95-45D792DA5410}
 		{3B23908B-4ECE-4CCC-A5C2-AC7455E666EA} = {D29DB15C-9945-4C9F-B002-75F27715FBD5}
 		{9EB3AAA2-5171-4DAA-8564-5052F68CA401} = {6C624FEB-2B77-4B43-9144-720566ECD3F6}
+		{2E8E4E05-8D95-4B15-9ADC-91E695794862} = {6C624FEB-2B77-4B43-9144-720566ECD3F6}
+		{747EAF00-E8AF-4D49-9918-C4B5D901693E} = {A93AFC75-089F-43C9-8ED3-2B1589715566}
+		{3A5505AA-0C58-445F-9F26-140D0F099B2E} = {9841C93B-6235-45A9-9A21-C99E46079EED}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB4243A9-EBC9-4BD8-8FB6-D5A80D6B3027}

@@ -4,14 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EUtility.Console.Menu
+namespace EUtility.ConsoleEx.Menu
 {
-    public interface IMenu
+    public interface IMenu : IDictionary<string,KeyValuePair<IMenuItem,Action<IMenu,string>>>, IEnumerator<KeyValuePair<string, KeyValuePair<IMenuItem, Action<IMenu, string>>>>
     {
         void UserInputSelect();
         void Select(int index);
-
-        IMenuItemCollection? Item { get; }
         IMenuItem? SelectedItem { get; }
     }
 }

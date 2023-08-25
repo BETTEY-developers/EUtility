@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EUtility.Console.Menu
+namespace EUtility.ConsoleEx.Menu
 {
     public interface IMenuItemCollection : IList<IMenuItem>
     {
-        IList<IMenuItem> Items { get; }
     }
 }

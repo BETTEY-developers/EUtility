@@ -5,7 +5,7 @@ namespace EUtility.UnitTestLib.LogTest;
 
 public enum LogType
 {
-    Track, Debug, Info, Warn, Error, Fatal
+    DontCare,Track, Debug, Info, Warn, Error, Fatal
 }
 public class LogTest
 {
@@ -13,9 +13,10 @@ public class LogTest
     public static ConsoleColor DebugLogColor { get; set; } = ConsoleColor.Gray;
     public static ConsoleColor InfoLogColor { get; set; } = ConsoleColor.Blue;
     public static ConsoleColor WarnLogColor { get; set; } = ConsoleColor.Yellow;
-    public static ConsoleColor ErrorLogColor { get; set; } = ConsoleColor.DarkRed;
-    public static ConsoleColor FatalLogColor { get; set; } = ConsoleColor.Red;
+    public static ConsoleColor ErrorLogColor { get; set; } = ConsoleColor.Red;
+    public static ConsoleColor FatalLogColor { get; set; } = ConsoleColor.Magenta;
     public static string DateFormat { get; set; } = "yyyy/MM/dd hh:mm:ss:ff";
+    public static LogType FilterType { get; set; } = LogType.DontCare;
 
     private static List<string> _loglines = new List<string>();
 
@@ -24,8 +25,10 @@ public class LogTest
     /// </summary>
     /// <param name="logType">该日志类型</param>
     /// <param name="message">日志行主体</param>
-    static void WriteLog(LogType logType, string message)
+    static public void WriteLog(LogType logType, string message)
     {
+        if (logType <= FilterType)
+            return;
         _loglines.Add($"[{Enum.GetName(typeof(LogType), logType)}] {DateTime.Now.ToString(DateFormat)}: {message}");
         Console.Write("[");
         switch(logType)
@@ -43,11 +46,12 @@ public class LogTest
             case LogType.Fatal:
                 Console.ForegroundColor = FatalLogColor; break;
         }
-        Console.Write(Enum.GetName(typeof(LogType), logType));
+        Console.Write($"{Enum.GetName(typeof(LogType), logType),-5}");
         Console.ResetColor();
         Console.Write("] ");
-        Console.Write(DateTime.Now.ToString(DateFormat));
+        Console.Write($"[{DateTime.Now.ToString(DateFormat)}]");
         Console.Write(": ");
+        if(logType >= LogType.Error) Console.ForegroundColor = ErrorLogColor;
         Console.Write(message);
         Console.WriteLine();
     }
@@ -56,7 +60,7 @@ public class LogTest
     /// 保存日志到文件
     /// </summary>
     /// <param name="description">日志文件描述</param>
-    static void Save(string description = "")
+    static public void Save(string description = "")
     {
         string s = DateTime.Now.ToString(DateFormat);
         Path.GetInvalidFileNameChars().ToList().ForEach(x => s = s.Replace(x,'_'));

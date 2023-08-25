@@ -1,4 +1,4 @@
-﻿namespace EUtility.Console.Message;
+﻿namespace EUtility.ConsoleEx.Message;
 
 public interface IMessageUnit
 {

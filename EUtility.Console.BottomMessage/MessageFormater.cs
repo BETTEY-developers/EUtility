@@ -1,2 +1,2 @@
-﻿namespace EUtility.Console.Message;
+﻿namespace EUtility.ConsoleEx.Message;
 
