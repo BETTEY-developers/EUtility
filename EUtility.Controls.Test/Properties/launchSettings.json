@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "EUtility.Controls.Test (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "EUtility.Controls.Test (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
