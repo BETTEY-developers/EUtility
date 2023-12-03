@@ -170,6 +170,15 @@ namespace EUtility.WinUI.Controls.ControlView
 
                 optionSetter.RegisterPropertyChangedCallback(setterChange, (sender, args) =>
                 {
+                    if (propertyType.IsEnum)
+                    {
+                        try
+                        {
+                            DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, Enum.Parse(propertyType, ((sender as ComboBox).Items[(int)sender.GetValue(args)] as ComboBoxItem).Content as string));
+                        }
+                        catch { }
+                        return;
+                    }
                     DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, sender.GetValue(args));
                 });
 

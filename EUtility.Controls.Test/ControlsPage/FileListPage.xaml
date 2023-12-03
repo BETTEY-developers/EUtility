@@ -14,10 +14,9 @@
         <StackPanel>
             <wccv:ControlPane>
                 <wccv:ControlPane.DisplayControl>
-                    <TextBox/>
+                    <wcf:FileList Path="D:\Program Files\zpq\RPE_1.2.1_Public\RPE_1.2.1_Public\"/>
                 </wccv:ControlPane.DisplayControl>
                 <wccv:ControlPane.Options>
-                    <wccv:ControlOption Path="Text" DisplayName="Text"/>
                 </wccv:ControlPane.Options>
             </wccv:ControlPane>
         </StackPanel>
