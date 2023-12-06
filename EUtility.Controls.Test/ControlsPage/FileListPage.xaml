@@ -17,6 +17,9 @@
                     <wcf:FileList Path="D:\Program Files\zpq\RPE_1.2.1_Public\RPE_1.2.1_Public\"/>
                 </wccv:ControlPane.DisplayControl>
                 <wccv:ControlPane.Options>
+                    <wccv:ControlOption Path="SortBaseElement" DisplayName="SortBaseElement"/>
+                    <wccv:ControlOption Path="SortGroup" DisplayName="SortGroup"/>
+                    <wccv:ControlOption Path="Path" DisplayName="Path"/>
                 </wccv:ControlPane.Options>
             </wccv:ControlPane>
         </StackPanel>

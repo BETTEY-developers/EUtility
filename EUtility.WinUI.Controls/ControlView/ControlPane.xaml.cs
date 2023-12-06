@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -129,6 +130,7 @@ namespace EUtility.WinUI.Controls.ControlView
                 {
                     CheckBox box = new();
                     box.Content = new TextBlock() { Text = controlOption.DisplayName };
+                    box.IsChecked = (bool)type.GetProperty(controlOption.Path).GetValue(DisplayControl);
                     setterChange = CheckBox.IsCheckedProperty;
                     optionSetter = box;
                 }
@@ -143,6 +145,7 @@ namespace EUtility.WinUI.Controls.ControlView
                     box.SmallChange = 1;
                     box.LargeChange = 1;
                     box.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    box.Text = (string)type.GetProperty(controlOption.Path).GetValue(DisplayControl);
                     setterChange = NumberBox.ValueProperty;
                     optionSetter = box;
                 }
@@ -151,6 +154,7 @@ namespace EUtility.WinUI.Controls.ControlView
                     TextBox box = new();
                     box.MaxLength = propertyType == typeof(char) ? 1 : int.MaxValue;
                     box.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    box.Text = (string)type.GetProperty(controlOption.Path).GetValue(DisplayControl);
                     setterChange = TextBox.TextProperty;
                     optionSetter = box;
                 }
@@ -179,7 +183,19 @@ namespace EUtility.WinUI.Controls.ControlView
                         catch { }
                         return;
                     }
-                    DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, sender.GetValue(args));
+                    try
+                    {
+                        DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, sender.GetValue(args));
+                    }
+                    catch(Exception e)
+                    {
+#if DEBUG
+                        Debug.WriteLine(e.Message);
+                        Debug.WriteLine(e.StackTrace);
+                        Debug.WriteLine(e.Source);
+#endif
+
+                    }
                 });
 
                 optionPreseter.Children.Add(optionSetter);

@@ -27,21 +27,38 @@ using JboxTransfer.Helpers;
 
 namespace EUtility.WinUI.Controls.Files;
 
-internal partial class FileListViewModel : ObservableRecipient
+public enum ItemSortOrder
 {
-    [ObservableProperty]
-    private ObservableCollection<DirectoryItemsData> _directoryItems;
+    Ascending,
+    Descending
 }
 
+public enum ItemSortBaseElement
+{
+    Name,
+    CreatedTime,
+    LastWroteTime,
+    Size
+}
+
+public enum ItemSortGroup
+{
+    None,
+    OnlyFileFolder,
+    Type
+}
+
+[ObservableObject]
 public sealed partial class FileList : UserControl, IResult<StorageFile>
 {
-    FileListViewModel ViewModel { get; set; }
 
     public FileList()
     {
-        ViewModel = new();
         this.InitializeComponent();
     }
+
+    [ObservableProperty]
+    private ObservableCollection<DirectoryItemsData> _directoryItems;
 
     public static DependencyProperty PathProperty
         = DependencyProperty.Register("Path", typeof(string), typeof(FileList), new("C:\\"));
@@ -55,6 +72,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         set
         {
             SetValue(PathProperty, value);
+            OnPropertyChanged(nameof(Path));
         }
     }
 
@@ -73,6 +91,54 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
+    public static DependencyProperty SortOrderProperty
+         = DependencyProperty.Register("SortOrder", typeof(ItemSortOrder), typeof(FileList), new(ItemSortOrder.Ascending));
+
+    public ItemSortOrder SortOrder
+    {
+        get
+        {
+            return (ItemSortOrder)GetValue(SortOrderProperty);
+        }
+        set
+        {
+            SetValue(SortOrderProperty, value);
+            OnPropertyChanged(nameof(SortOrder));
+        }
+    }
+
+    public static DependencyProperty SortBaseElementProperty
+        = DependencyProperty.Register("SortBaseElement", typeof(ItemSortBaseElement), typeof(FileList), new(ItemSortBaseElement.Name));
+
+    public ItemSortBaseElement SortBaseElement
+    {
+        get
+        {
+            return (ItemSortBaseElement)GetValue(SortBaseElementProperty);
+        }
+        set
+        {
+            SetValue(SortBaseElementProperty, value);
+            OnPropertyChanged(nameof(SortBaseElement));
+        }
+    }
+
+    public static DependencyProperty SortGroupProperty
+        = DependencyProperty.Register("SortGroup", typeof(ItemSortGroup), typeof(FileList), new(ItemSortGroup.None));
+
+    public ItemSortGroup SortGroup
+    {
+        get
+        {
+            return (ItemSortGroup)GetValue(SortGroupProperty);
+        }
+        set
+        {
+            SetValue(SortGroupProperty, value);
+            OnPropertyChanged(nameof(SortGroupProperty));
+        }
+    }
+
     public StorageFile Result => throw new NotImplementedException();
 
     public bool IsSuccess => throw new NotImplementedException();
@@ -81,10 +147,156 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     {
         DirectoryInfo di = new(Path);
 
-        ViewModel.DirectoryItems = GetDirectoryDatas(di, (x, y) => x.Name.CompareTo(y.Name));
+        DirectoryItems = GetSortedDirectoryDatas(di, ItemComparisonFactory(SortOrder, SortBaseElement));
+
+        PropertyChanged += FileList_PropertyChanged;
     }
 
-    private ObservableCollection<DirectoryItemsData> GetDirectoryDatas(DirectoryInfo di, Comparison<FileSystemInfo> comparison)
+    #region PropertyChanged
+
+    private void FileList_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DirectoryItems))
+            return;
+        DirectoryItems = GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement));
+    }
+    
+    #endregion
+
+    private Comparison<FileSystemInfo> ItemComparisonFactory(ItemSortOrder Order, ItemSortBaseElement sort) =>
+    (x, y) =>
+    {
+        FileSystemInfo first = default;
+        FileSystemInfo second = default;
+
+        switch (Order)
+        {
+            case ItemSortOrder.Ascending:
+                first = x;
+                second = y;
+                break;
+
+            case ItemSortOrder.Descending:
+                first = y;
+                second = x;
+                break;
+        }
+
+        switch (sort)
+        {
+            case ItemSortBaseElement.Name:
+                return first.Name.CompareTo(second.Name);
+
+            case ItemSortBaseElement.CreatedTime:
+                return first.CreationTime.CompareTo(second.CreationTime);
+
+            case ItemSortBaseElement.LastWroteTime:
+                return first.LastWriteTime.CompareTo(second.LastWriteTime);
+
+            case ItemSortBaseElement.Size:
+                if (first.Attributes.HasFlag(System.IO.FileAttributes.Directory) || second.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                    return -1;
+                return new FileInfo(first.FullName).Length.CompareTo(new FileInfo(second.FullName).Length);
+
+            default:
+                goto case ItemSortBaseElement.Name;
+        }
+    };
+
+    private ObservableCollection<DirectoryItemsData> GetSortedDirectoryDatas(DirectoryInfo di, Comparison<FileSystemInfo> comparison)
+    {
+        const int FILE = 0;
+        const int FOLDER = 1;
+
+        List<FileSystemInfo> list = GetDirectoryDatas(di);
+
+        if (SortGroup == ItemSortGroup.None)
+        {
+            list.Sort(comparison);
+        }
+        else if(SortGroup == ItemSortGroup.OnlyFileFolder)
+        {
+            List<FileSystemInfo>[] nomerge = new List<FileSystemInfo>[]
+            {
+                new(),
+                new()
+            };
+
+            foreach(var item in list)
+            {
+                if(item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                {
+                    nomerge[FOLDER].Add(item);
+                }
+                else
+                {
+                    nomerge[FILE].Add(item);
+                }
+            }
+
+            nomerge[FOLDER].Sort(comparison);
+            nomerge[FILE].Sort(comparison);
+
+            list = nomerge[FOLDER].Concat(nomerge[FILE]).ToList();
+        }
+        else
+        {
+            Dictionary<string, List<FileSystemInfo>> types = new()
+            {
+                ["Folder"] = new() 
+            };
+
+            foreach (var item in list)
+            {
+                if(item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                {
+                    types["Folder"].Add(item);
+                    continue;
+                }
+
+                if(!types.ContainsKey(item.Extension))
+                {
+                    types.Add(item.Extension, new());
+                }
+
+                types[item.Extension].Add(item);
+            }
+
+            foreach (var type in types)
+            {
+                type.Value.Sort(comparison);
+            }
+
+            var nosorttype = types.Skip(1).ToList();
+            nosorttype.Sort((x,y)=>x.Key.CompareTo(y.Key));
+
+            var sorttype = new List<FileSystemInfo>();
+
+            sorttype.AddRange(types["Folder"]);
+
+            nosorttype.ForEach(x => sorttype.AddRange(x.Value));
+
+            list = sorttype;
+        }
+
+        ObservableCollection<DirectoryItemsData> result = new();
+
+        foreach (var item in list)
+        {
+            if ((item as DirectoryInfo) == null)
+            {
+                result.Add((item, (BitmapImage)IconHelper.FindIconForFilename(item.FullName, true)));
+            }
+            else
+            {
+                result.Add((item, new()));
+            }
+        }
+
+        return result;
+    }
+
+    private static List<FileSystemInfo> GetDirectoryDatas(DirectoryInfo di)
     {
         List<FileSystemInfo> list = new();
         foreach (var item in di.EnumerateFiles())
@@ -96,19 +308,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             list.Add(item);
         }
 
-        list.Sort(comparison);
-
-        ObservableCollection<DirectoryItemsData> result = new();
-
-        foreach (var item in list)
-        {
-            if ((item as DirectoryInfo) == null)
-            {
-                result.Add((item, (BitmapImage)IconHelper.FindIconForFilename(item.FullName, true)));
-            }
-        }
-
-        return result;
+        return list;
     }
 
     private void ListArea_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -117,7 +317,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     }
 }
 
-internal record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon)
+public record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon)
 {
     public static implicit operator (FileSystemInfo Info, BitmapImage Icon)(DirectoryItemsData value)
     {

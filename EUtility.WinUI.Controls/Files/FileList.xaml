@@ -50,10 +50,14 @@
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
-    <Grid>
-        <ListView x:Name="ListArea" 
-                  SelectionChanged="ListArea_SelectionChanged" 
-                  ItemsSource="{x:Bind ViewModel.DirectoryItems, Mode=OneWay}" 
-                  ItemTemplate="{ThemeResource DataGridTemplate}"/>
+    <Grid MaxHeight="600">
+        <ScrollViewer>
+            <ListView x:Name="ListArea" 
+                      SelectionChanged="ListArea_SelectionChanged" 
+                      ItemsSource="{x:Bind DirectoryItems, Mode=OneWay}" 
+                      ItemTemplate="{ThemeResource DataGridTemplate}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Visible"/>
+        </ScrollViewer>
+        
     </Grid>
 </UserControl>
