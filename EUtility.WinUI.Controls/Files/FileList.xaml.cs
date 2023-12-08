@@ -21,6 +21,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using JboxTransfer.Helpers;
+using Windows.System;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -143,11 +144,17 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
 
     public bool IsSuccess => throw new NotImplementedException();
 
+    public bool _refresh = false;
+
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         DirectoryInfo di = new(Path);
 
-        DirectoryItems = GetSortedDirectoryDatas(di, ItemComparisonFactory(SortOrder, SortBaseElement));
+        DirectoryItems = new();
+
+        DirectoryItems.Add(new(new DirectoryInfo(string.Join('\\', di.FullName.Split('\\')[..^1])), new(), "Previous Folder"));
+
+        GetSortedDirectoryDatas(di, ItemComparisonFactory(SortOrder, SortBaseElement)).ToList().ForEach(DirectoryItems.Add);
 
         PropertyChanged += FileList_PropertyChanged;
     }
@@ -158,7 +165,13 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     {
         if (e.PropertyName == nameof(DirectoryItems))
             return;
-        DirectoryItems = GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement));
+
+        DirectoryItems.Clear();
+
+        DirectoryItems.Add(new(new DirectoryInfo(string.Join('\\', Path.Split('\\')[..^1])), new(), "Previous Folder"));
+
+        GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement)).ToList().ForEach(DirectoryItems.Add);
+        
     }
     
     #endregion
@@ -285,11 +298,11 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         {
             if ((item as DirectoryInfo) == null)
             {
-                result.Add((item, (BitmapImage)IconHelper.FindIconForFilename(item.FullName, true)));
+                result.Add(new(item, (BitmapImage)IconHelper.FindIconForFilename(item.FullName, true)));
             }
             else
             {
-                result.Add((item, new()));
+                result.Add(new(item, new()));
             }
         }
 
@@ -311,24 +324,45 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         return list;
     }
 
-    private void ListArea_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void ListArea_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        
+        if(_refresh)
+        {
+            _refresh = false;
+            return;
+        }
+        var data = (DirectoryItemsData)ListArea.SelectedItem;
+
+        if(data.Info.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+        {
+            _refresh = true;
+            Path = data.Info.FullName;
+        }
+        else
+        {
+            Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(data.Info.FullName));
+        }
     }
 }
 
-public record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon)
+public record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon, string DisplayName = "$Default$")
 {
-    public static implicit operator (FileSystemInfo Info, BitmapImage Icon)(DirectoryItemsData value)
+    public string GetUIName()
     {
-        return (value.Info, value.Icon);
+        return DisplayName == "$Default$" ? Info.Name : DisplayName;
     }
 
-    public static implicit operator DirectoryItemsData((FileSystemInfo info, BitmapImage icon) value)
+    public static implicit operator (FileSystemInfo Info, BitmapImage Icon, string DisplayName)(DirectoryItemsData value)
     {
-        return new DirectoryItemsData(value.info, value.icon);
+        return (value.Info, value.Icon, value.DisplayName);
+    }
+
+    public static implicit operator DirectoryItemsData((FileSystemInfo info, BitmapImage icon, string DisplayName) value)
+    {
+        return new DirectoryItemsData(value.info, value.icon, value.DisplayName);
     }
 }
+
 
 internal class ExternConverter : IValueConverter
 {

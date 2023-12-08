@@ -25,7 +25,7 @@
                     <Image Source="{Binding Icon}"/>
                 </Border>
                 <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-                           Text="{Binding Info.Name}" 
+                           Text="{x:Bind GetUIName()}" 
                            Grid.Column="1"/>
 
                 <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
