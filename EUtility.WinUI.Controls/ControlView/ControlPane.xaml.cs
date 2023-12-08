@@ -1,3 +1,4 @@
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,8 +13,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Timers;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.StartScreen;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -172,29 +175,62 @@ namespace EUtility.WinUI.Controls.ControlView
                     optionSetter = box;
                 }
 
+                bool canChange = false;
+                var timer = DispatcherQueue.CreateTimer();
+
                 optionSetter.RegisterPropertyChangedCallback(setterChange, (sender, args) =>
                 {
-                    if (propertyType.IsEnum)
+                    if (setterChange == TextBox.TextProperty || setterChange == NumberBox.TextProperty)
                     {
-                        try
+                        if(!timer.IsRunning)
                         {
-                            DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, Enum.Parse(propertyType, ((sender as ComboBox).Items[(int)sender.GetValue(args)] as ComboBoxItem).Content as string));
+                            timer.Tick += Elapsed(sender, args, controlOption, propertyType, timer);
+                            timer.Interval = TimeSpan.FromMilliseconds(800);
+                            timer.Start();
                         }
-                        catch { }
+                        else
+                        {
+                            timer.Stop();
+                            timer.Start();
+                        }
                         return;
                     }
-                    try
-                    {
-                        DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, sender.GetValue(args));
-                    }
-                    catch(Exception e)
-                    {
-#if DEBUG
-                        Debug.WriteLine(e.Message);
-                        Debug.WriteLine(e.StackTrace);
-                        Debug.WriteLine(e.Source);
-#endif
 
+                    OnChange(sender, args, controlOption, propertyType);
+
+                    void OnChange(DependencyObject sender, DependencyProperty args, ControlOption controlOption, Type propertyType)
+                    {
+                        if (propertyType.IsEnum)
+                        {
+                            try
+                            {
+                                DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, Enum.Parse(propertyType, ((sender as ComboBox).Items[(int)sender.GetValue(args)] as ComboBoxItem).Content as string));
+                            }
+                            catch { }
+                            return;
+                        }
+                        try
+                        {
+                            DisplayControl.GetType().GetProperty(controlOption.Path).SetValue(DisplayControl, sender.GetValue(args));
+                        }
+                        catch (Exception e)
+                        {
+#if DEBUG
+                            Debug.WriteLine(e.Message);
+                            Debug.WriteLine(e.StackTrace);
+                            Debug.WriteLine(e.Source);
+#endif
+                        }
+                    }
+
+                    TypedEventHandler<DispatcherQueueTimer, object> Elapsed(DependencyObject sender, DependencyProperty args, ControlOption controlOption, Type propertyType, DispatcherQueueTimer watch)
+                    {
+                        return (s, a) =>
+                        {
+                            OnChange(sender, args, controlOption, propertyType);
+                            watch.Stop();
+                            watch.Tick -= Elapsed(sender, args, controlOption, propertyType, watch);
+                        };
                     }
                 });
 
