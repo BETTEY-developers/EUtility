@@ -6,54 +6,185 @@
     xmlns:local="using:EUtility.WinUI.Controls.Files"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d"
     Loaded="UserControl_Loaded">
     <UserControl.Resources>
         <local:ExternConverter x:Key="ExtConverter"/>
         <local:FileSizeConverter x:Key="SizeConverter"/>
         <DataTemplate x:Key="DataGridTemplate" x:DataType="local:DirectoryItemsData">
-            <Grid ColumnSpacing="5" Padding="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1.5*"/>
-                    <ColumnDefinition Width="0.5*"/>
-                </Grid.ColumnDefinitions>
-                <Border CornerRadius="4" Grid.Column="0" HorizontalAlignment="Left">
-                    <Image Source="{Binding Icon}"/>
-                </Border>
-                <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-                           Text="{x:Bind GetUIName()}" 
-                           Grid.Column="1"/>
+            <ListViewItem RightTapped="ListViewItem_RightTapped" DoubleTapped="ListViewItem_DoubleTapped">
+                <Grid ColumnSpacing="5" Padding="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border CornerRadius="4" Grid.Column="0" HorizontalAlignment="Left">
+                        <Image Source="{Binding Icon}"/>
+                    </Border>
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
+    Text="{x:Bind GetUIName()}" 
+    Grid.Column="1"/>
 
-                <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="{Binding Info.CreationTime}"
-                           Grid.Column="2"/>
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
+    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+    Text="{Binding Info.CreationTime}"
+    Grid.Column="2"/>
 
-                <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="{Binding Info.LastWriteTime}"
-                           Grid.Column="3"/>
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
+    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+    Text="{Binding Info.LastWriteTime}"
+    Grid.Column="3"/>
 
-                <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="{Binding Info.Extension, Converter={StaticResource ExtConverter}}"
-                           Grid.Column="4"/>
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
+    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+    Text="{Binding Info.Extension, Converter={StaticResource ExtConverter}}"
+    Grid.Column="4"/>
 
-                <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="{Binding Info, Converter={StaticResource SizeConverter}}"
-                           Grid.Column="5"/>
-            </Grid>
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
+    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+    Text="{Binding Info, Converter={StaticResource SizeConverter}}"
+    Grid.Column="5"/>
+                </Grid>
+            </ListViewItem>
         </DataTemplate>
+
+        <!-- Windows style commands -->
+
+        <converters:BoolToVisibilityConverter x:Key="BVC"/>
+
+        <CommandBarFlyout x:Name="FileRightBar" Placement="Right" ShowMode="TransientWithDismissOnPointerMoveAway" AlwaysExpanded="True">
+            <AppBarButton>
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE8C6;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton>
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE8C8;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton>
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE8AC;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton>
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE72D;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton>
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE74D;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <CommandBarFlyout.SecondaryCommands>
+                
+                <!-- File commands -->
+
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}"
+                              Label="打开" Command="{x:Bind OpenFileCommand}">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE7AC;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarButton Visibility="{x:Bind IsSelectFile, Mode=OneWay, Converter={StaticResource BVC}}"
+                              Label="打开方式" x:Name="OpenWithLauncher">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE7AC;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                
+                <AppBarButton Visibility="{x:Bind IsSelectFile, Mode=OneWay, Converter={StaticResource BVC}}"
+                              Label="添加到收藏夹">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE734;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}"
+                              Label="压缩为ZIP文件">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xF12B;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}"
+                              Label="复制文件地址">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE756;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                
+
+                <!-- Folder Commands-->
+
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
+                              Label="排序方式">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE8CB;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
+                              Label="分组依据">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xF168;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarSeparator Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"/>
+
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
+                              Label="新建">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xECC8;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarButton Label="属性" Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE90F;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarSeparator Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"/>
+
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
+                              Label="在终端中打开">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE756;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <!-- Always Commands -->
+
+                <AppBarButton Label="属性" Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE90F;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+                <AppBarSeparator/>
+                
+                <AppBarButton Label="显示更多选项">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE712;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+
+            </CommandBarFlyout.SecondaryCommands>
+        </CommandBarFlyout>
     </UserControl.Resources>
     <Grid MaxHeight="600">
         <ScrollViewer>
             <ListView x:Name="ListArea" 
-                      SelectionChanged="ListArea_SelectionChanged" 
                       ItemsSource="{x:Bind DirectoryItems, Mode=OneWay}" 
                       ItemTemplate="{ThemeResource DataGridTemplate}"
                       ScrollViewer.HorizontalScrollBarVisibility="Visible"/>

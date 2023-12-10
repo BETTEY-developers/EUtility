@@ -22,6 +22,12 @@ using Windows.Foundation.Collections;
 using Windows.Storage;
 using JboxTransfer.Helpers;
 using Windows.System;
+using Windows.UI.ViewManagement;
+using CommunityToolkit.Mvvm.Input;
+using Windows.ApplicationModel.DataTransfer;
+
+using EUtility.RegisterEx;
+using EUtility.RegisterEx.File;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -140,6 +146,33 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
+    public static DependencyProperty ShowGroupProperty
+        = DependencyProperty.Register("ShowGroup", typeof(bool), typeof(FileList), new(false));
+
+    public bool ShowGroup
+    {
+        get
+        {
+            return (bool)GetValue(ShowGroupProperty);
+        }
+        set
+        {
+            SetValue(ShowGroupProperty, value);
+            OnPropertyChanged(nameof(ShowGroup));
+        }
+    }
+
+    [ObservableProperty]
+    private bool _isSelectdItem = false;
+
+    [ObservableProperty]
+    private bool _isSelectDirectory = false;
+
+    [ObservableProperty]
+    private bool _isSelectFile = false;
+
+    private ListViewItem _rightItem;
+
     public StorageFile Result => throw new NotImplementedException();
 
     public bool IsSuccess => throw new NotImplementedException();
@@ -163,7 +196,10 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
 
     private void FileList_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(DirectoryItems))
+        if (e.PropertyName == nameof(DirectoryItems) || 
+            e.PropertyName == nameof(IsSelectdItem) ||
+            e.PropertyName == nameof(IsSelectDirectory) ||
+            e.PropertyName == nameof(IsSelectFile))
             return;
 
         DirectoryItems.Clear();
@@ -171,7 +207,6 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         DirectoryItems.Add(new(new DirectoryInfo(string.Join('\\', Path.Split('\\')[..^1])), new(), "Previous Folder"));
 
         GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement)).ToList().ForEach(DirectoryItems.Add);
-        
     }
     
     #endregion
@@ -324,23 +359,60 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         return list;
     }
 
-    private async void ListArea_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ListViewItem_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
-        if(_refresh)
+        IsSelectdItem = false;
+        IsSelectDirectory = false;
+        IsSelectFile = false;
+        var senderconved = ((ListViewItem)sender);
+        if (senderconved.IsSelected)
+        {
+            IsSelectdItem = true;
+            _rightItem = (ListViewItem)sender;
+            if (!((DirectoryItemsData)senderconved.DataContext).Info.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+            {
+                IsSelectFile = true;
+                FileRightBar.ShowAt((FrameworkElement)sender);
+            }
+            else
+            {
+                IsSelectDirectory = true;
+                FileRightBar.ShowAt((FrameworkElement)sender);
+            }
+        }
+        else
+        {
+            IsSelectDirectory = true;
+            FileRightBar.ShowAt((FrameworkElement)sender);
+        }
+        
+    }
+
+    /* Commands */
+
+    [RelayCommand]
+    private void OpenFile()
+    {
+        (((DirectoryItemsData)_rightItem.DataContext).Info as FileInfo).Launch();
+    }
+
+    private async void ListViewItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (_refresh)
         {
             _refresh = false;
             return;
         }
         var data = (DirectoryItemsData)ListArea.SelectedItem;
 
-        if(data.Info.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+        if (data.Info.Attributes.HasFlag(System.IO.FileAttributes.Directory))
         {
             _refresh = true;
             Path = data.Info.FullName;
         }
         else
         {
-            Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(data.Info.FullName));
+            ((FileInfo)data.Info).Launch();
         }
     }
 }
