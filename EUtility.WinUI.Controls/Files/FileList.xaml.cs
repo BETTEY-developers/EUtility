@@ -20,7 +20,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
-using JboxTransfer.Helpers;
 using Windows.System;
 using Windows.UI.ViewManagement;
 using CommunityToolkit.Mvvm.Input;
@@ -28,11 +27,25 @@ using Windows.ApplicationModel.DataTransfer;
 
 using EUtility.RegisterEx;
 using EUtility.RegisterEx.File;
+using Windows.Services.Maps;
+using Windows.Win32;
+using System.IO.Compression;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Resources.Core;
+using Microsoft.VisualBasic.FileIO;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.ApplicationModel.DataTransfer.DragDrop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace EUtility.WinUI.Controls.Files;
+
+public class ItemOrderRadio : Helpers.EnumRadio<ItemSortOrder>;
+
+public class ItemSortBaseElementRadio : Helpers.EnumRadio<ItemSortBaseElement>;
+
+public class ItemSortGroupRadio : Helpers.EnumRadio<ItemSortGroup>;
 
 public enum ItemSortOrder
 {
@@ -58,7 +71,6 @@ public enum ItemSortGroup
 [ObservableObject]
 public sealed partial class FileList : UserControl, IResult<StorageFile>
 {
-
     public FileList()
     {
         this.InitializeComponent();
@@ -68,7 +80,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     private ObservableCollection<DirectoryItemsData> _directoryItems;
 
     public static DependencyProperty PathProperty
-        = DependencyProperty.Register("Path", typeof(string), typeof(FileList), new("C:\\"));
+        = DependencyProperty.Register("Path", typeof(string), typeof(FileList), new("C:\\\\"));
 
     public string Path
     {
@@ -162,6 +174,39 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
+    public bool ShowPrevious
+    {
+        get 
+        { 
+            return (bool)GetValue(ShowPreviousProperty); 
+        }
+        set 
+        { 
+            SetValue(ShowPreviousProperty, value); 
+            OnPropertyChanged(nameof(ShowPrevious));
+        }
+    }
+
+    // Using a DependencyProperty as the backing store for ShowPrevious.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty ShowPreviousProperty =
+        DependencyProperty.Register("ShowPrevious", typeof(bool), typeof(FileList), new PropertyMetadata(true));
+
+
+
+    public bool IsInRoot
+    {
+        get { return (bool)GetValue(IsInRootProperty); }
+        set 
+        { 
+            SetValue(IsInRootProperty, value); 
+            OnPropertyChanged(nameof(IsInRoot));
+        }
+    }
+
+    // Using a DependencyProperty as the backing store for IsInRoot.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty IsInRootProperty =
+        DependencyProperty.Register("IsInRoot", typeof(bool), typeof(FileList), new PropertyMetadata(false));
+
     [ObservableProperty]
     private bool _isSelectdItem = false;
 
@@ -171,15 +216,23 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     [ObservableProperty]
     private bool _isSelectFile = false;
 
+    [ObservableProperty]
+    private bool _canPaste = false;
+
+    [ObservableProperty]
+    public ObservableCollection<DriveItemsData> _driveInfos = new();
+
     private ListViewItem _rightItem;
 
     public StorageFile Result => throw new NotImplementedException();
 
     public bool IsSuccess => throw new NotImplementedException();
 
-    public bool _refresh = false;
+    private bool _refresh = false;
 
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    private bool _NonHandle = false;
+
+    private async void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         DirectoryInfo di = new(Path);
 
@@ -187,26 +240,66 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
 
         DirectoryItems.Add(new(new DirectoryInfo(string.Join('\\', di.FullName.Split('\\')[..^1])), new(), "Previous Folder"));
 
-        GetSortedDirectoryDatas(di, ItemComparisonFactory(SortOrder, SortBaseElement)).ToList().ForEach(DirectoryItems.Add);
+        foreach (var item in DriveInfo.GetDrives())
+        {
+            BitmapImage bitmap = default;
+            if(item.DriveType is DriveType.Fixed or DriveType.Removable)
+            {
+                bitmap = (BitmapImage)this.Resources["DriveImage"];
+            }
+            else if(item.DriveType == DriveType.CDRom)
+            {
+                bitmap = (BitmapImage)this.Resources["CDImage"];
+            }
+            else
+            {
+                continue;
+            }
+            DriveInfos.Add(new(item, bitmap));
+        }
+
+        (await GetSortedDirectoryDatas(di, ItemComparisonFactory(SortOrder, SortBaseElement))).ToList().ForEach(DirectoryItems.Add);
 
         PropertyChanged += FileList_PropertyChanged;
     }
 
     #region PropertyChanged
 
-    private void FileList_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private async void FileList_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(DirectoryItems) || 
             e.PropertyName == nameof(IsSelectdItem) ||
             e.PropertyName == nameof(IsSelectDirectory) ||
-            e.PropertyName == nameof(IsSelectFile))
+            e.PropertyName == nameof(IsSelectFile) ||
+            e.PropertyName == nameof(IsInRoot) ||
+            _NonHandle)
+        {
+            _NonHandle = false;
             return;
+        }
 
         DirectoryItems.Clear();
+        if(Path.Length == 1)
+        {
+            IsInRoot = true;
+            return;
+        }
+        else
+        {
+            IsInRoot = false;
+        }
 
-        DirectoryItems.Add(new(new DirectoryInfo(string.Join('\\', Path.Split('\\')[..^1])), new(), "Previous Folder"));
+        if(ShowPrevious)
+            DirectoryItems.Add(new(new DirectoryInfo(string.Join("", new Uri(Path).Segments[..^1])), new(), "Previous Folder"));
 
-        GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement)).ToList().ForEach(DirectoryItems.Add);
+        if(Path.Length > 1)
+        {
+            _NonHandle = true;
+            Path = Path.TrimStart('/');
+        }
+            
+
+        (await GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement))).ToList().ForEach(DirectoryItems.Add);
     }
     
     #endregion
@@ -251,7 +344,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     };
 
-    private ObservableCollection<DirectoryItemsData> GetSortedDirectoryDatas(DirectoryInfo di, Comparison<FileSystemInfo> comparison)
+    private async Task<ObservableCollection<DirectoryItemsData>> GetSortedDirectoryDatas(DirectoryInfo di, Comparison<FileSystemInfo> comparison)
     {
         const int FILE = 0;
         const int FOLDER = 1;
@@ -319,7 +412,6 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             nosorttype.Sort((x,y)=>x.Key.CompareTo(y.Key));
 
             var sorttype = new List<FileSystemInfo>();
-
             sorttype.AddRange(types["Folder"]);
 
             nosorttype.ForEach(x => sorttype.AddRange(x.Value));
@@ -333,11 +425,19 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         {
             if ((item as DirectoryInfo) == null)
             {
-                result.Add(new(item, (BitmapImage)IconHelper.FindIconForFilename(item.FullName, true)));
+                BitmapImage bi = new();
+                try
+                {
+                    var f = await StorageFile.GetFileFromPathAsync(item.FullName);
+                    bi.SetSource((await f.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView)).AsStream().AsRandomAccessStream());
+                }
+                catch { }
+                
+                result.Add(new(item, bi));
             }
             else
             {
-                result.Add(new(item, new()));
+                result.Add(new(item, (BitmapImage)this.Resources[(object)"FolderImage"]));
             }
         }
 
@@ -354,17 +454,29 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         foreach (var item in di.EnumerateDirectories())
         {
             list.Add(item);
+
         }
 
         return list;
     }
 
-    private void ListViewItem_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    private async void ListViewItem_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         IsSelectdItem = false;
         IsSelectDirectory = false;
         IsSelectFile = false;
         var senderconved = ((ListViewItem)sender);
+        var dpv = Clipboard.GetContent();
+        // Get files
+        try
+        {
+            var items = await dpv.GetStorageItemsAsync();
+            if (items.Count > 0)
+            {
+                CanPaste = true;
+            }
+        }
+        catch { }
         if (senderconved.IsSelected)
         {
             IsSelectdItem = true;
@@ -396,6 +508,76 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         (((DirectoryItemsData)_rightItem.DataContext).Info as FileInfo).Launch();
     }
 
+    [RelayCommand]
+    private void Comp()
+    {
+        var info = ((DirectoryItemsData)_rightItem.DataContext).Info;
+
+        if(info.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+        {
+            ZipFile.CreateFromDirectory(info.FullName, info.FullName + ".zip");
+        }
+        else
+        {
+            var direct = Directory.CreateDirectory(info.Name);
+            File.Copy(info.FullName, global::System.IO.Path.Combine(direct.FullName, info.Name + info.Extension));
+            ZipFile.CreateFromDirectory(direct.Parent.FullName, direct.FullName);
+        }
+    }
+
+    [RelayCommand]
+    private void CopyPath()
+    {
+        DataPackage dp = new DataPackage();
+        dp.SetText(((DirectoryItemsData)_rightItem.DataContext).Info.FullName);
+        Clipboard.SetContent(dp);
+    }
+
+    DirectoryItemsData _renameitem = default;
+
+    [RelayCommand]
+    private void RenameFile()
+    {
+        var select = (DirectoryItemsData)ListArea.SelectedItem;
+        int index = DirectoryItems.IndexOf(select);
+        var newl = DirectoryItems;
+        select.IsEditing = true;
+        newl[index] = select;
+        DirectoryItems = newl;
+        _renameitem = select;
+    }
+
+    [RelayCommand]
+    private async void CopyFile()
+    {
+        DataPackage dp = new();
+        List<StorageFile> files = new();
+        foreach (var item in ListArea.SelectedItems)
+        {
+            files.Add(await StorageFile.GetFileFromPathAsync(((DirectoryItemsData)item).Info.FullName));
+        }
+        dp.SetStorageItems(files);
+        Clipboard.SetContent(dp);
+    }
+
+    [RelayCommand]
+    private void PasteItem()
+    {
+        if (!IsSelectdItem)
+            PasteItemToCurrent();
+    }
+
+    private async void PasteItemToCurrent()
+    {
+        DataPackageView dpv = Clipboard.GetContent();
+        var items = await dpv.GetStorageItemsAsync();
+
+        foreach(var item in items)
+        {
+            
+        }
+    }
+
     private async void ListViewItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         if (_refresh)
@@ -405,6 +587,17 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
         var data = (DirectoryItemsData)ListArea.SelectedItem;
 
+        if(data.DisplayName == "Previous Folder")
+        {
+            _NonHandle = true;
+            Path = string.Join("", new Uri(Path).Segments[..^1]);
+            if(Path.Length > 1)
+                Path = Path.TrimStart('/');
+            else
+                Path = Path;
+            return;
+        }
+
         if (data.Info.Attributes.HasFlag(System.IO.FileAttributes.Directory))
         {
             _refresh = true;
@@ -412,16 +605,50 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
         else
         {
-            ((FileInfo)data.Info).Launch();
+            if(!await Launcher.LaunchFileAsync(await StorageFile.GetFileFromPathAsync(data.Info.FullName)))
+            {
+                ((FileInfo)data.Info).Launch();
+            }
         }
+    }
+
+    private void GridViewItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        Path = ((DriveItemsData)DriveList.SelectedItems[0]).Info.Name;
+    }
+
+    private async void TextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        var select = _renameitem;
+        if (((TextBox)sender).Text == select.Info.Name + select.Info.Extension)
+            return;
+        File.Move(select.Info.FullName, System.IO.Path.Combine(System.IO.Path.GetFullPath(Path), ((TextBox)sender).Text));
+        DirectoryItems.Clear();
+        if (ShowPrevious)
+            DirectoryItems.Add(new(new DirectoryInfo(string.Join("", new Uri(Path).Segments[..^1])), new(), "Previous Folder"));
+        (await GetSortedDirectoryDatas(new(Path), ItemComparisonFactory(SortOrder, SortBaseElement))).ToList().ForEach(DirectoryItems.Add);
     }
 }
 
-public record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon, string DisplayName = "$Default$")
+public record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon, string DisplayName = "$Default$", bool IsEditing = false)
 {
     public string GetUIName()
     {
         return DisplayName == "$Default$" ? Info.Name : DisplayName;
+    }
+
+    private string _name = Info.Name;
+
+    public string Name
+    {
+        get
+        {
+            return _name;
+        }
+        set
+        {
+            _name = value;
+        }
     }
 
     public static implicit operator (FileSystemInfo Info, BitmapImage Icon, string DisplayName)(DirectoryItemsData value)
@@ -433,34 +660,45 @@ public record struct DirectoryItemsData(FileSystemInfo Info, BitmapImage Icon, s
     {
         return new DirectoryItemsData(value.info, value.icon, value.DisplayName);
     }
+
+    public ImageSource GetSource()
+        => Icon;
 }
 
+public partial record struct DriveItemsData(DriveInfo Info, BitmapImage Icon)
+{
+    public double GetUsedSpace()
+    {
+        return Info.TotalSize - Info.TotalFreeSpace;
+    }
+
+    public string GetDescription()
+    {
+        return FileSizeConverter.GetSizeStringFromBytesCount(Info.AvailableFreeSpace) +
+               " ø…”√£¨π≤" +
+               FileSizeConverter.GetSizeStringFromBytesCount(Info.TotalSize);
+    }
+
+    public string GetUIName()
+    {
+        return $"{Info.VolumeLabel} ({Info.Name[..^1]})";
+    }
+}
 
 internal class ExternConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        string ext = value as string;
-
-        RegistryKey extreg = Registry.ClassesRoot.OpenSubKey(ext);
-        if (extreg == null)
+        FileSystemInfo fileSystemInfo = (value as FileSystemInfo);
+        if (fileSystemInfo.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+            return "";
+        string f = "";
+        try
         {
-            return ext[1..].ToUpper();
+            f = StorageFile.GetFileFromPathAsync(fileSystemInfo.FullName).GetAwaiter().GetResult().DisplayType;
         }
-
-        RegistryKey extFriendly = Registry.ClassesRoot.OpenSubKey((extreg.GetValue("") as string)??"");
-        if (extFriendly == null)
-        {
-            extreg.Close();
-            return ext[1..].ToUpper();
-        }
-
-        string extFriendlyName = extFriendly.GetValue("") as string;
-
-        extFriendly.Close();
-        extreg.Close();
-
-        return extFriendlyName;
+        catch { }
+        return f;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -471,16 +709,11 @@ internal class ExternConverter : IValueConverter
 
 public class FileSizeConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, string language)
+    public static string GetSizeStringFromBytesCount(long size)
     {
         const long KB = 1024;
         const long MB = 1024 * 1024;
         const long GB = 1024 * 1024 * 1024;
-
-        if (value.GetType() != typeof(FileInfo))
-            return "";
-
-        var size = ((FileInfo)value).Length;
 
         return size switch
         {
@@ -489,6 +722,12 @@ public class FileSizeConverter : IValueConverter
             < GB => $"{size / MB}MB",
             >= GB => $"{size / GB}GB"
         };
+    }
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if ((value as FileInfo) == null)
+            return "";
+        return GetSizeStringFromBytesCount((value as FileInfo).Length);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)

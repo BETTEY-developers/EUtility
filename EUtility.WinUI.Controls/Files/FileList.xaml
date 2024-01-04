@@ -1,17 +1,25 @@
-<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="EUtility.WinUI.Controls.Files.FileList"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="using:System"
     xmlns:local="using:EUtility.WinUI.Controls.Files"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:helper="using:EUtility.WinUI.Controls.Helpers"
     mc:Ignorable="d"
     Loaded="UserControl_Loaded">
     <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="VisConverter"/>
+
         <local:ExternConverter x:Key="ExtConverter"/>
         <local:FileSizeConverter x:Key="SizeConverter"/>
+        
+        <BitmapImage UriSource="Assets/folder.png" x:Key="FolderImage"/>
+        <BitmapImage UriSource="Assets/drive.png" x:Key="DriveImage"/>
+        <BitmapImage UriSource="Assets/CDdriver.png" x:Key="CDImage"/>
+
         <DataTemplate x:Key="DataGridTemplate" x:DataType="local:DirectoryItemsData">
             <ListViewItem RightTapped="ListViewItem_RightTapped" DoubleTapped="ListViewItem_DoubleTapped">
                 <Grid ColumnSpacing="5" Padding="12">
@@ -23,62 +31,81 @@
                         <ColumnDefinition Width="1.5*"/>
                         <ColumnDefinition Width="0.5*"/>
                     </Grid.ColumnDefinitions>
-                    <Border CornerRadius="4" Grid.Column="0" HorizontalAlignment="Left">
-                        <Image Source="{Binding Icon}"/>
+                    <Border CornerRadius="4" Grid.Column="0" HorizontalAlignment="Left" Height="24" Width="24">
+                        <Image Source="{x:Bind GetSource()}" Height="24" Width="24"/>
                     </Border>
                     <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-    Text="{x:Bind GetUIName()}" 
-    Grid.Column="1"/>
+                               Text="{x:Bind GetUIName()}" 
+                               Visibility="{x:Bind IsEditing, Converter={StaticResource VisConverter}, ConverterParameter=True}" 
+                               Grid.Column="1"/>
+                    <TextBox   Text="{x:Bind Name, Mode=TwoWay}"
+                               LostFocus="TextBox_LostFocus"
+                               Visibility="{x:Bind IsEditing, Converter={StaticResource VisConverter}}"
+                               Grid.Column="1"/>
 
                     <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-    Text="{Binding Info.CreationTime}"
-    Grid.Column="2"/>
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="{Binding Info.CreationTime}"
+                               Grid.Column="2"/>
 
                     <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-    Text="{Binding Info.LastWriteTime}"
-    Grid.Column="3"/>
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="{Binding Info.LastWriteTime}"
+                               Grid.Column="3"/>
 
                     <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-    Text="{Binding Info.Extension, Converter={StaticResource ExtConverter}}"
-    Grid.Column="4"/>
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="{Binding Info, Converter={StaticResource ExtConverter}}"
+                               Grid.Column="4"/>
 
                     <TextBlock Style="{StaticResource BodyTextBlockStyle}" 
-    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-    Text="{Binding Info, Converter={StaticResource SizeConverter}}"
-    Grid.Column="5"/>
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="{Binding Info, Converter={StaticResource SizeConverter}}"
+                               Grid.Column="5"/>
                 </Grid>
             </ListViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:DataType="local:DriveItemsData"
+                      x:Key="DriveItem">
+            <GridViewItem DoubleTapped="GridViewItem_DoubleTapped">
+                <Grid Padding="16" Height="80" Width="256" ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="0" VerticalAlignment="Center" Width="32" Source="{Binding Icon}"/>
+                    <StackPanel Spacing="3" Grid.Column="1" VerticalAlignment="Stretch">
+                        <TextBlock Text="{x:Bind GetUIName()}"/>
+                        <ProgressBar Maximum="{Binding Info.TotalSize}" 
+                                     Value="{x:Bind GetUsedSpace()}"/>
+                        <TextBlock Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                   Text="{x:Bind GetDescription()}"/>
+                    </StackPanel>
+                </Grid>
+            </GridViewItem>
         </DataTemplate>
 
         <!-- Windows style commands -->
 
         <converters:BoolToVisibilityConverter x:Key="BVC"/>
 
-        <CommandBarFlyout x:Name="FileRightBar" Placement="Right" ShowMode="TransientWithDismissOnPointerMoveAway" AlwaysExpanded="True">
-            <AppBarButton>
-                <AppBarButton.Icon>
-                    <FontIcon Glyph="&#xE8C6;" />
-                </AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton>
+        <CommandBarFlyout x:Name="FileRightBar" 
+                          Placement="Right" 
+                          ShowMode="TransientWithDismissOnPointerMoveAway" 
+                          AlwaysExpanded="True">
+            <AppBarButton Command="{x:Bind CopyFileCommand}">
                 <AppBarButton.Icon>
                     <FontIcon Glyph="&#xE8C8;" />
                 </AppBarButton.Icon>
             </AppBarButton>
-            <AppBarButton>
+            <AppBarButton Command="{x:Bind RenameFileCommand}" 
+                          Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource VisConverter}}">
                 <AppBarButton.Icon>
                     <FontIcon Glyph="&#xE8AC;" />
                 </AppBarButton.Icon>
             </AppBarButton>
-            <AppBarButton>
-                <AppBarButton.Icon>
-                    <FontIcon Glyph="&#xE72D;" />
-                </AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton>
+            <AppBarButton Visibility="{x:Bind CanPaste, Mode=OneWay, Converter={StaticResource VisConverter}}">
                 <AppBarButton.Icon>
                     <FontIcon Glyph="&#xE74D;" />
                 </AppBarButton.Icon>
@@ -100,23 +127,16 @@
                         <FontIcon Glyph="&#xE7AC;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                
-                <AppBarButton Visibility="{x:Bind IsSelectFile, Mode=OneWay, Converter={StaticResource BVC}}"
-                              Label="添加到收藏夹">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE734;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-                
+
                 <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}"
-                              Label="压缩为ZIP文件">
+                              Label="压缩为Zip文件" Command="{x:Bind CompCommand}">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xF12B;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
                 
                 <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}"
-                              Label="复制文件地址">
+                              Label="复制文件地址" Command="{x:Bind CopyPathCommand}">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE756;" />
                     </AppBarButton.Icon>
@@ -130,8 +150,41 @@
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE8CB;" />
                     </AppBarButton.Icon>
-                </AppBarButton>
+                    <AppBarButton.Flyout>
+                        <MenuFlyout>
+                            <RadioMenuFlyoutItem Text="升序" GroupName="Order" 
+                                                 local:ItemOrderRadio.Target="{x:Bind SortOrder, Mode=OneWay}" local:ItemOrderRadio.TriggerValue="0"/>
+                            <RadioMenuFlyoutItem Text="降序" GroupName="Order" 
+                                                 local:ItemOrderRadio.Target="{x:Bind SortOrder, Mode=OneWay}" local:ItemOrderRadio.TriggerValue="1"/>
+                            <MenuFlyoutSeparator/>
 
+                            <RadioMenuFlyoutItem Text="名称" GroupName="SortBaseElement"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.TriggerValue="0"/>
+                            <RadioMenuFlyoutItem Text="创建时间" GroupName="SortBaseElement"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.TriggerValue="1"/>
+                            <RadioMenuFlyoutItem Text="最后修改时间" GroupName="SortBaseElement"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.TriggerValue="2"/>
+                            <RadioMenuFlyoutItem Text="大小" GroupName="SortBaseElement"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.TriggerValue="3"/>
+                            <MenuFlyoutSeparator/>
+
+                            <RadioMenuFlyoutItem Text="无" GroupName="SortGroup"
+                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
+                                                 local:ItemSortGroupRadio.TriggerValue="0"/>
+                            <RadioMenuFlyoutItem Text="文件夹与文件" GroupName="SortGroup"
+                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
+                                                 local:ItemSortGroupRadio.TriggerValue="1"/>
+                            <RadioMenuFlyoutItem Text="按文件类型" GroupName="SortGroup"
+                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
+                                                 local:ItemSortGroupRadio.TriggerValue="2"/>
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                
                 <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
                               Label="分组依据">
                     <AppBarButton.Icon>
@@ -171,24 +224,60 @@
                     </AppBarButton.Icon>
                 </AppBarButton>
 
-                <AppBarSeparator/>
-                
-                <AppBarButton Label="显示更多选项">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE712;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-
             </CommandBarFlyout.SecondaryCommands>
         </CommandBarFlyout>
     </UserControl.Resources>
-    <Grid MaxHeight="600">
-        <ScrollViewer>
-            <ListView x:Name="ListArea" 
-                      ItemsSource="{x:Bind DirectoryItems, Mode=OneWay}" 
-                      ItemTemplate="{ThemeResource DataGridTemplate}"
-                      ScrollViewer.HorizontalScrollBarVisibility="Visible"/>
-        </ScrollViewer>
-        
+    <Grid MaxHeight="600" MinWidth="925" Padding="16" Background="{ThemeResource LayerFillColorAltBrush}">
+        <Grid>
+            <GridView x:Name="DriveList"
+                          ItemsSource="{x:Bind DriveInfos}"
+                          ItemTemplate="{StaticResource DriveItem}"
+                          Visibility="{x:Bind IsInRoot, Mode=OneWay, Converter={StaticResource VisConverter}}"/>
+            <Grid RowSpacing="5" Visibility="{x:Bind IsInRoot, Mode=OneWay, Converter={StaticResource VisConverter}, ConverterParameter=True}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" 
+                          Height="48" 
+                          CornerRadius="6" 
+                          Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                          BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
+                          BorderThickness="1"
+                          Padding="16,14"
+                          ColumnSpacing="5">
+                    <Grid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Uid="FileList_FileName" HorizontalTextAlignment="Center" Grid.ColumnSpan="1" Grid.Column="0"/>
+                    <TextBlock x:Uid="FileList_CreateTime" Grid.Column="2"/>
+                    <TextBlock x:Uid="FileList_LastWroteTime" Grid.Column="3"/>
+                    <TextBlock x:Uid="FileList_FileType" Grid.Column="4"/>
+                    <TextBlock x:Uid="FileList_FileSize" Grid.Column="5"/>
+                </Grid>
+                <ScrollViewer Grid.Row="1" 
+                              MaxHeight="600"
+                              CornerRadius="6" 
+                              BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
+                              BorderThickness="1">
+                    <ListView x:Name="ListArea"
+                              ItemsSource="{x:Bind DirectoryItems, Mode=OneWay}" 
+                              ItemTemplate="{ThemeResource DataGridTemplate}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Visible"/>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
     </Grid>
 </UserControl>
