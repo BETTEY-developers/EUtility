@@ -64,13 +64,13 @@ namespace EUtility.WinUI.Controls.ControlView
         }
 
         public static DependencyProperty DisplayControlProperty =
-            DependencyProperty.Register("DisplayControl", typeof(Control), typeof(ControlPane), new(new()));
+            DependencyProperty.Register("DisplayControl", typeof(UIElement), typeof(ControlPane), new(new()));
 
-        public Control DisplayControl
+        public UIElement DisplayControl
         {
             get
             {
-                return (Control)GetValue(DisplayControlProperty);
+                return (UIElement)GetValue(DisplayControlProperty);
             }
             set
             { 
@@ -110,9 +110,9 @@ namespace EUtility.WinUI.Controls.ControlView
                 typeof(float),
                 typeof(decimal)
             };
-                
 
-            Control control = DisplayControl;
+
+            UIElement control = DisplayControl;
             ControlArea.Children.Add(DisplayControl);
 
             Type type = control.GetType();
