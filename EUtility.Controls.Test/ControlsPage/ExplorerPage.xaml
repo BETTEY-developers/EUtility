@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="EUtility.Controls.Test.ControlsPage.FileListPage"
+    x:Class="EUtility.Controls.Test.ControlsPage.ExplorerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:EUtility.Controls.Test.ControlsPage"
@@ -14,14 +14,9 @@
         <StackPanel>
             <wccv:ControlPane>
                 <wccv:ControlPane.DisplayControl>
-                    <wcf:FileList Path="D:\Files"/>
+                    <wcf:Explorer/>
                 </wccv:ControlPane.DisplayControl>
                 <wccv:ControlPane.Options>
-                    <wccv:ControlOption Path="SortBaseElement" DisplayName="SortBaseElement"/>
-                    <wccv:ControlOption Path="SortGroup" DisplayName="SortGroup"/>
-                    <wccv:ControlOption Path="Path" DisplayName="Path"/>
-                    <wccv:ControlOption Path="ShowPrevious" DisplayName="ShowPrevious"/>
-                    <wccv:ControlOption Path="SortOrder" DisplayName="SortOrder"/>
                 </wccv:ControlPane.Options>
             </wccv:ControlPane>
         </StackPanel>
