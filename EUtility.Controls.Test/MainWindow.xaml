@@ -12,6 +12,7 @@
             <NavigationViewItem x:Uid="NavItem_Files">
                 <NavigationViewItem.MenuItems>
                     <NavigationViewItem x:Uid="NavItem_FileList" Tag="EUtility.Controls.Test.ControlsPage.FileListPage"/>
+                    <NavigationViewItem x:Uid="NavItem_Explorer" Tag="EUtility.Controls.Test.ControlsPage.ExplorerPage"/>
                 </NavigationViewItem.MenuItems>
             </NavigationViewItem>
         </NavigationView.MenuItems>

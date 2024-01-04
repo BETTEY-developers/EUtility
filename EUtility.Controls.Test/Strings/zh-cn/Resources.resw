@@ -123,6 +123,9 @@
   <data name="Global_NavigationView.PaneTitle" xml:space="preserve">
     <value>控件</value>
   </data>
+  <data name="NavItem_Explorer.Content" xml:space="preserve">
+    <value>文件浏览器</value>
+  </data>
   <data name="NavItem_FileList.Content" xml:space="preserve">
     <value>文件列表</value>
   </data>

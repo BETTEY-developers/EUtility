@@ -12,6 +12,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="ControlsPage\ExplorerPage.xaml" />
     <None Remove="ControlsPage\FileListPage.xaml" />
   </ItemGroup>
 
@@ -56,4 +57,10 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  <ItemGroup>
+    <CustomAdditionalCompileInputs Remove="ControlsPage\ExplorerPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Remove="ControlsPage\ExplorerPage.xaml" />
+  </ItemGroup>
 </Project>
