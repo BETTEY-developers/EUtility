@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,10 @@ namespace EUtility.RegisterEx.File;
 
 class __FileUtil
 {
+    private static readonly string[] SysFile = new[]
+    {
+        ".dll", ".sys"
+    };
     private static Dictionary<string, List<OpenWith>> _cache = new();
 
     public static List<OpenWith>? GetWiths(string extension)
@@ -27,15 +32,15 @@ class __FileUtil
         if (!ValueValidation.IsNotNull(ext)) return null;
 
         RegistryKey ext2 = ext.OpenSubKey("OpenWithProgids");
-        
-        if(ValueValidation.IsNotNull(ext2))
+
+        var defaults = ext.GetDefaultValue() as string;
+        if (defaults is "" or null)
+            keys.Add(Registry.ClassesRoot.OpenSubKey(defaults));
+
+        if (ValueValidation.IsNotNull(ext2))
         {
             keys.AddRange(GetWithsKeyFromProgids(ext2));
         }
-
-        var defaults = ext.GetDefaultValue() as string;
-        if (defaults != "")
-            keys.Add(Registry.ClassesRoot.OpenSubKey(defaults));
 
         foreach(var k in ext.GetValueNames())
         {
@@ -52,8 +57,11 @@ class __FileUtil
         return ow;
     }
 
-    public static OpenWith GetOpenWith(string extension, int index = 0)
+    public static OpenWith GetOpenWith(string extension, int index = 0, string file = "")
     {
+        if (SysFile.Contains(extension))
+            return OpenWith.InitFactory(file);
+
         if (_cache.ContainsKey(extension))
             return _cache[extension][index];
 
@@ -124,15 +132,30 @@ public readonly struct OpenWith
         return new(ok.GetDefaultValue() as string);
     }
 
+    internal static OpenWith InitFactory(string file)
+    {
+        return new($"start \"{file}\"");
+    }
+
     public string ExecutableFile { get; }
     public string[] Arguments { get; }
 }
 
 public static class FileExtension
 {
+    /// <summary>
+    /// Open file.
+    /// </summary>
+    /// <param name="fileInfo">File of would to open.</param>
     public static void Launch(this FileInfo fileInfo)
     {
-        OpenWith openwith = __FileUtil.GetOpenWith(fileInfo.Extension);
+        if(fileInfo.Extension == ".exe")
+        {
+            fileInfo.LaunchExecutable();
+            return;
+        }
+
+        OpenWith openwith = __FileUtil.GetOpenWith(fileInfo.Extension, file: fileInfo.FullName);
 
         Process process = new();
         process.StartInfo.FileName = openwith.ExecutableFile;
@@ -147,5 +170,14 @@ public static class FileExtension
         }
         process.StartInfo.Arguments = argstring;
         process.Start();
+    }
+
+    /// <summary>
+    /// Start program.
+    /// </summary>
+    /// <param name="fileInfo">Program.</param>
+    public static void LaunchExecutable(this FileInfo fileInfo)
+    {
+        Process.Start(fileInfo.FullName);
     }
 }

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EUtilityPrimary\EUtilityPrimary.csproj" />
+    <ProjectReference Include="..\EUtilityPrimary\EUtilityCommon.csproj" />
   </ItemGroup>
 
 </Project>
