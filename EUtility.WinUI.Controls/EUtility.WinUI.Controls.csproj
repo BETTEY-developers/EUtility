@@ -5,11 +5,14 @@
     <RootNamespace>EUtility.WinUI.Controls</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <AssemblyVersion>1.0.2312.88</AssemblyVersion>
-    <FileVersion>1.0.2312.88</FileVersion>
+    <AssemblyVersion>1.0.2401.211</AssemblyVersion>
+    <FileVersion>1.0.2401.211</FileVersion>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="ControlView\ControlPane.xaml" />
+    <None Remove="Files\Dialogs\RenameRepetitive.xaml" />
+    <None Remove="Files\Explorer.xaml" />
     <None Remove="Files\FileList.xaml" />
     <None Remove="Style\Global.xaml" />
   </ItemGroup>
@@ -31,6 +34,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Files\Explorer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="Files\FileList.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -44,6 +53,12 @@
 
   <ItemGroup>
     <Page Update="Style\Global.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Files\Dialogs\RenameRepetitive.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
