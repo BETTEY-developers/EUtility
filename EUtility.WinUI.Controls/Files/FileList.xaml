@@ -170,8 +170,17 @@
                             <RadioMenuFlyoutItem Text="大小" GroupName="SortBaseElement"
                                                  local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
                                                  local:ItemSortBaseElementRadio.TriggerValue="3"/>
-                            <MenuFlyoutSeparator/>
-
+                        </MenuFlyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
+                              Label="分组依据">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xF168;" />
+                    </AppBarButton.Icon>
+                    <AppBarButton.Flyout>
+                        <MenuFlyout>
                             <RadioMenuFlyoutItem Text="无" GroupName="SortGroup"
                                                  local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
                                                  local:ItemSortGroupRadio.TriggerValue="0"/>
@@ -183,13 +192,6 @@
                                                  local:ItemSortGroupRadio.TriggerValue="2"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
-                </AppBarButton>
-                
-                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
-                              Label="分组依据">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xF168;" />
-                    </AppBarButton.Icon>
                 </AppBarButton>
 
                 <AppBarSeparator Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"/>
@@ -209,8 +211,7 @@
 
                 <AppBarSeparator Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"/>
 
-                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
-                              Label="在终端中打开">
+                <AppBarButton Label="在终端中打开" Command="{x:Bind OpenInTerminalCommand}">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE756;" />
                     </AppBarButton.Icon>
@@ -218,7 +219,8 @@
 
                 <!-- Always Commands -->
 
-                <AppBarButton Label="属性" Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}">
+                <AppBarButton Label="属性" Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}}"
+                              Command="{x:Bind ShowPropertiesCommand}">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE90F;" />
                     </AppBarButton.Icon>
@@ -227,7 +229,7 @@
             </CommandBarFlyout.SecondaryCommands>
         </CommandBarFlyout>
     </UserControl.Resources>
-    <Grid MaxHeight="600" MinWidth="925" Padding="16" Background="{ThemeResource LayerFillColorAltBrush}">
+    <Grid x:Name="Root" Padding="16" Background="{ThemeResource LayerFillColorAltBrush}">
         <Grid>
             <GridView x:Name="DriveList"
                           ItemsSource="{x:Bind DriveInfos}"
@@ -267,7 +269,6 @@
                     <TextBlock x:Uid="FileList_FileSize" Grid.Column="5"/>
                 </Grid>
                 <ScrollViewer Grid.Row="1" 
-                              MaxHeight="600"
                               CornerRadius="6" 
                               BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
                               BorderThickness="1">
