@@ -35,6 +35,16 @@ using Windows.ApplicationModel.Resources.Core;
 using Microsoft.VisualBasic.FileIO;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.ApplicationModel.DataTransfer.DragDrop;
+using Microsoft.UI.Input;
+using Windows.UI.Core;
+using Windows.Devices.Input;
+using System.Diagnostics;
+using EUtility.WinUI.Helpers;
+using System.Buffers.Text;
+using Windows.Storage.Streams;
+using Windows.Win32.Foundation;
+using System.Diagnostics.CodeAnalysis;
+using EUtility.Foundation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -71,15 +81,41 @@ public enum ItemSortGroup
 [ObservableObject]
 public sealed partial class FileList : UserControl, IResult<StorageFile>
 {
+    private ResourceChecker _resourceChecker = new();
+
+    private List<ResourceItem> _resources = new()
+    {
+        new ResourceItem()
+        {
+            Name = System.IO.Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Extensions"),
+            CheckProc = (s, a) =>
+            {
+                return Directory.Exists(a);
+            },
+            Fallback = (s, a) =>
+            {
+                Directory.CreateDirectory(a);
+                return new();
+            }
+        }
+    };
+
     public FileList()
     {
+        foreach(var item in _resources)
+        {
+            _resourceChecker.AddResource(item.Name, item.CheckProc, item.Fallback);
+        }
+        _resourceChecker.CheckResources();
+
+        
         this.InitializeComponent();
     }
 
     [ObservableProperty]
     private ObservableCollection<DirectoryItemsData> _directoryItems;
 
-    public static DependencyProperty PathProperty
+    public static readonly DependencyProperty PathProperty
         = DependencyProperty.Register("Path", typeof(string), typeof(FileList), new("C:\\\\"));
 
     public string Path
@@ -92,10 +128,14 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         {
             SetValue(PathProperty, value);
             OnPropertyChanged(nameof(Path));
+            foreach(var d in _pathChanged)
+            {
+                d(this, Path);
+            }
         }
     }
 
-    public static DependencyProperty ChooseFileTypeProperty
+    public static readonly DependencyProperty ChooseFileTypeProperty
         = DependencyProperty.Register("ChooseFileType", typeof(Dictionary<string, IList<string>>), typeof(FileList), new(new Dictionary<string, IList<string>>()));
 
     public Dictionary<string, IList<string>> ChooseFileType
@@ -110,7 +150,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
-    public static DependencyProperty SortOrderProperty
+    public static readonly DependencyProperty SortOrderProperty
          = DependencyProperty.Register("SortOrder", typeof(ItemSortOrder), typeof(FileList), new(ItemSortOrder.Ascending));
 
     public ItemSortOrder SortOrder
@@ -126,7 +166,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
-    public static DependencyProperty SortBaseElementProperty
+    public static readonly DependencyProperty SortBaseElementProperty
         = DependencyProperty.Register("SortBaseElement", typeof(ItemSortBaseElement), typeof(FileList), new(ItemSortBaseElement.Name));
 
     public ItemSortBaseElement SortBaseElement
@@ -142,7 +182,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
-    public static DependencyProperty SortGroupProperty
+    public static readonly DependencyProperty SortGroupProperty
         = DependencyProperty.Register("SortGroup", typeof(ItemSortGroup), typeof(FileList), new(ItemSortGroup.None));
 
     public ItemSortGroup SortGroup
@@ -158,8 +198,32 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         }
     }
 
-    public static DependencyProperty ShowGroupProperty
+    public static readonly DependencyProperty ShowGroupProperty
         = DependencyProperty.Register("ShowGroup", typeof(bool), typeof(FileList), new(false));
+
+
+
+    private List<TypedDelegate<Foundation.Void, FileList, string>> _pathChanged = new();
+
+    public event TypedDelegate<Foundation.Void, FileList, string> PathChanged
+    {
+        add { _pathChanged.Add(value); }
+        remove { _pathChanged.Remove(value); }
+    }
+
+    // Using a DependencyProperty as the backing store for PathChanged.  This enables animation, styling, binding, etc...
+    public static readonly DependencyProperty PathChangedProperty =
+        DependencyProperty.Register("PathChanged", typeof(int), typeof(TypedDelegate<Foundation.Void, FileList, string>), new PropertyMetadata(new(), OnPathChanged));
+
+    private static void OnPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var fl = d as FileList;
+
+        if(e.OldValue != null)
+            fl.PathChanged -= (TypedDelegate<Foundation.Void, FileList, string>)e.OldValue;
+
+        fl.PathChanged += (TypedDelegate<Foundation.Void, FileList, string>)e.NewValue;
+    }
 
     public bool ShowGroup
     {
@@ -220,7 +284,9 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     private bool _canPaste = false;
 
     [ObservableProperty]
-    public ObservableCollection<DriveItemsData> _driveInfos = new();
+    private ObservableCollection<DriveItemsData> _driveInfos = new();
+
+    private List<string> _cacheExtensionTumbs = new List<string>();
 
     private ListViewItem _rightItem;
 
@@ -234,6 +300,8 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
 
     private async void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
+        Root.Height = ((FrameworkElement)Parent).Height;
+
         DirectoryInfo di = new(Path);
 
         DirectoryItems = new();
@@ -304,68 +372,304 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     
     #endregion
 
-    private Comparison<FileSystemInfo> ItemComparisonFactory(ItemSortOrder Order, ItemSortBaseElement sort) =>
-    (x, y) =>
+    private Comparison<FileSystemInfo> ItemComparisonFactory(ItemSortOrder Order, ItemSortBaseElement sort)
     {
-        FileSystemInfo first = default;
-        FileSystemInfo second = default;
-
-        switch (Order)
-        {
-            case ItemSortOrder.Ascending:
-                first = x;
-                second = y;
-                break;
-
-            case ItemSortOrder.Descending:
-                first = y;
-                second = x;
-                break;
-        }
-
+        bool asd = Order == ItemSortOrder.Ascending;
         switch (sort)
         {
             case ItemSortBaseElement.Name:
-                return first.Name.CompareTo(second.Name);
+                return (x, y) => x.Name.CompareTo(y.Name) * (asd? 1 : -1);
 
             case ItemSortBaseElement.CreatedTime:
-                return first.CreationTime.CompareTo(second.CreationTime);
+                return (x, y) => x.CreationTime.CompareTo(y.LastWriteTime) * (asd ? 1 : -1);
 
             case ItemSortBaseElement.LastWroteTime:
-                return first.LastWriteTime.CompareTo(second.LastWriteTime);
+                return (x, y) => x.LastWriteTime.CompareTo(y.LastWriteTime) * (asd ? 1 : -1);
 
             case ItemSortBaseElement.Size:
-                if (first.Attributes.HasFlag(System.IO.FileAttributes.Directory) || second.Attributes.HasFlag(System.IO.FileAttributes.Directory))
-                    return -1;
-                return new FileInfo(first.FullName).Length.CompareTo(new FileInfo(second.FullName).Length);
+                return (first, second) =>
+                {
+                    if (first.Attributes.HasFlag(System.IO.FileAttributes.Directory) || second.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                        return -1;
+                    return new FileInfo(first.FullName).Length.CompareTo(new FileInfo(second.FullName).Length);
+                };
 
             default:
                 goto case ItemSortBaseElement.Name;
         }
-    };
+    }
+
+    private class Comparer : IEqualityComparer<FileSystemInfo>
+    {
+        public bool Equals(FileSystemInfo x, FileSystemInfo y)
+        {
+            return x.Equals(y);
+        }
+
+        public int GetHashCode([DisallowNull] FileSystemInfo obj)
+        {
+            return obj.GetHashCode();
+        }
+    }
+
+    private bool ListNoSecEqual(List<FileSystemInfo> first, List<FileSystemInfo> second)
+    {
+        foreach (var item in first)
+        {
+            if(!second.Contains(item, new Comparer()))
+                return false;
+        }
+        return true;
+    }
+
+    Dictionary<string, (ObservableCollection<DirectoryItemsData>, ItemSortGroup, ItemSortBaseElement, ItemSortOrder)> _cacheItems = new();
+
+    Dictionary<string, int> _cacheHash = new();
+
+    private int GetFileItemListHashCode(List<FileSystemInfo> l)
+    {
+        int hc = 0;
+        for(int i = 0; i < l.Count; i++)
+        {
+            var item = l[i];
+            if (item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                continue;
+
+            hc += (int)item.FullName.Sum(x => (decimal)x) +
+                  (int)Math.Floor((double)(item.LastWriteTime.Ticks / 32768)) +
+                  (int)Math.Floor((double)(item.CreationTime.Ticks / 32768)) +
+                  (int)item.Extension.Sum(x => (decimal)x);
+        }
+        return hc;
+    }
+
+    private int IndexOf(Predicate<FileSystemInfo> predicate, ObservableCollection<DirectoryItemsData> list)
+    {
+        for(int i = 0; i < list.Count(); i++)
+        {
+            if (predicate(list[i].Info))
+                return i;
+        }
+        return -1;
+    }
 
     private async Task<ObservableCollection<DirectoryItemsData>> GetSortedDirectoryDatas(DirectoryInfo di, Comparison<FileSystemInfo> comparison)
     {
         const int FILE = 0;
         const int FOLDER = 1;
+        // 0: Normal
+        // 1: Only Sort
+        // 2: All Eq.
+        int flag = 0;
+        long old_t = 0;
 
         List<FileSystemInfo> list = GetDirectoryDatas(di);
 
+        if (_cacheHash.ContainsKey(Path))
+        {
+            if (_cacheHash[Path] == GetFileItemListHashCode(list))
+            {
+                flag = 2;
+            }
+            else if (_cacheItems[Path].Item2 != SortGroup ||
+                     _cacheItems[Path].Item3 != SortBaseElement ||
+                     _cacheItems[Path].Item4 != SortOrder)
+            {
+                flag = 1;
+            }
+        }
+        if (flag == 0)
+        {
+            SortItems(comparison, FILE, FOLDER, ref old_t, ref list);
+        }
+        else if(flag == 1)
+        {
+            var result = new List<FileSystemInfo>();
+            switch(SortGroup)
+            {
+                case ItemSortGroup.None:
+                    {
+                        var noneitems =
+                            (from i in list
+                            where !i.Attributes.HasFlag(System.IO.FileAttributes.Directory)
+                            select i)
+                            .ToList();
+                        noneitems.Sort(comparison);
+                        result = noneitems;
+                        break;
+                    }
+                case ItemSortGroup.OnlyFileFolder:
+                    {
+                        IEnumerable<FileSystemInfo>[] collection = new[]
+                        {
+                            from i in list
+                            where i.Attributes.HasFlag(System.IO.FileAttributes.Directory)
+                            orderby comparison
+                            select i,
+                            from i in list
+                            where !i.Attributes.HasFlag(System.IO.FileAttributes.Directory)
+                            orderby comparison
+                            select i
+                        };
+
+                        result = (List<FileSystemInfo>)(collection[0].Concat(collection[1]));
+                        break;
+                    }
+                case ItemSortGroup.Type:
+                    {
+                        Dictionary<string, IEnumerable<FileSystemInfo>> types = new();
+                        types.Add(
+                            "FOLDER",
+                            from i in list
+                            where i.Attributes.HasFlag(System.IO.FileAttributes.Directory)
+                            orderby comparison
+                            select i
+                        );
+
+                        foreach(var item in list)
+                        {
+                            if (item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                                continue;
+                            if(types.ContainsKey(item.Extension))
+                            {
+                                types[item.Extension].Append(item);
+                            }
+                            else
+                            {
+                                var l = new List<FileSystemInfo>
+                                {
+                                    item
+                                };
+                                types.Add(item.Extension, l);
+                            }
+                        }
+
+                        var typelist = types.ToList();
+                        int index = 0;
+                        foreach(var i in typelist)
+                        {
+                            var temp = i.Value.ToList();
+                            temp.Sort(comparison);
+                            typelist[index] = new(i.Key, temp);
+                        }
+
+                        result.AddRange(types["FOLDER"]);
+
+                        typelist = (List<KeyValuePair<string, IEnumerable<FileSystemInfo>>>)typelist.Skip(1);
+
+                        typelist.Skip(1).ToList().ForEach(x => result.AddRange(x.Value));
+                        break;
+                    }
+            }
+
+            var items = _cacheItems[Path].Item1;
+
+            ObservableCollection<DirectoryItemsData> finaresult = new();
+            for(int i = 0; i < items.Count; i++)
+            {
+                finaresult.Add(new());
+            }
+
+            
+            for (int i = 0; i < items.Count; i++)
+            {
+                finaresult[IndexOf(x => x == items[i].Info, items)] = items[i];
+            }
+
+            _cacheItems[Path] = (finaresult, SortGroup, SortBaseElement, SortOrder);
+        }
+
+        if (flag == 0)
+        {
+            ObservableCollection<DirectoryItemsData> result = new();
+
+            string[] executable = new[]
+            {
+            ".exe", ".com", ".dos"
+            };
+            foreach (var item in list)
+            {
+                if ((item as DirectoryInfo) == null)
+                {
+                    BitmapImage bi = new();
+                    if (_cacheExtensionTumbs.Contains(item.Extension))
+                    {
+                        try
+                        {
+                            bi.UriSource = new((await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("Extensions")).GetFileAsync(Text.ETxt.GetETxtFromTexts(item.Extension))).Path);
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var f = await StorageFile.GetFileFromPathAsync(item.FullName);
+                            bool canCache = !(f.ContentType.Split("/")[0] is "video" or "image") || executable.Contains(f.FileType);
+                            var stream = (await f.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView)).AsStream().AsRandomAccessStream();
+                            bi.SetSource(stream);
+                            stream.Seek(0);
+                            if (!canCache)
+                                continue;
+                            try
+                            {
+                                var file = await (await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("Extensions")).CreateFileAsync(Text.ETxt.GetETxtFromTexts(item.Extension))).OpenStreamForWriteAsync();
+                                var oristream = stream.AsStreamForRead();
+                                while (oristream.Position < oristream.Length)
+                                {
+                                    byte[] bytes = new byte[4096];
+                                    oristream.Read(bytes, 0, bytes.Length);
+                                    file.Write(bytes, 0, bytes.Length);
+                                }
+                                file.Close();
+                                oristream.Close();
+                            }
+                            catch { }
+                            _cacheExtensionTumbs.Add(item.Extension);
+                        }
+                        catch { }
+                    }
+                    result.Add(new(item, bi));
+                }
+                else
+                {
+                    result.Add(new(item, (BitmapImage)this.Resources[(object)"FolderImage"]));
+                }
+            }
+
+            DictionaryAddElement(ref _cacheHash, Path, ()=>GetFileItemListHashCode(list));
+            DictionaryAddElement(ref _cacheItems, Path, () => (result, SortGroup, SortBaseElement, SortOrder));
+
+            return result;
+        }
+        return _cacheItems[Path].Item1;
+    }
+
+    private void DictionaryAddElement<K, V>(ref Dictionary<K, V> dictionary, K key , Func<V> value)
+    {
+        if (dictionary.ContainsKey(key))
+            dictionary[key] = value();
+        else
+            dictionary.Add(key, value());
+    }
+
+    private void SortItems(Comparison<FileSystemInfo> comparison, int FILE, int FOLDER, ref long old_t, ref List<FileSystemInfo> list)
+    {
         if (SortGroup == ItemSortGroup.None)
         {
             list.Sort(comparison);
         }
-        else if(SortGroup == ItemSortGroup.OnlyFileFolder)
+        else if (SortGroup == ItemSortGroup.OnlyFileFolder)
         {
             List<FileSystemInfo>[] nomerge = new List<FileSystemInfo>[]
             {
-                new(),
-                new()
+            new(),
+            new()
             };
 
-            foreach(var item in list)
+            foreach (var item in list)
             {
-                if(item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                if (item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                 {
                     nomerge[FOLDER].Add(item);
                 }
@@ -384,18 +688,18 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         {
             Dictionary<string, List<FileSystemInfo>> types = new()
             {
-                ["Folder"] = new() 
+                ["Folder"] = new()
             };
 
             foreach (var item in list)
             {
-                if(item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
+                if (item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                 {
                     types["Folder"].Add(item);
                     continue;
                 }
 
-                if(!types.ContainsKey(item.Extension))
+                if (!types.ContainsKey(item.Extension))
                 {
                     types.Add(item.Extension, new());
                 }
@@ -409,7 +713,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             }
 
             var nosorttype = types.Skip(1).ToList();
-            nosorttype.Sort((x,y)=>x.Key.CompareTo(y.Key));
+            nosorttype.Sort((x, y) => x.Key.CompareTo(y.Key));
 
             var sorttype = new List<FileSystemInfo>();
             sorttype.AddRange(types["Folder"]);
@@ -418,30 +722,6 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
 
             list = sorttype;
         }
-
-        ObservableCollection<DirectoryItemsData> result = new();
-
-        foreach (var item in list)
-        {
-            if ((item as DirectoryInfo) == null)
-            {
-                BitmapImage bi = new();
-                try
-                {
-                    var f = await StorageFile.GetFileFromPathAsync(item.FullName);
-                    bi.SetSource((await f.GetThumbnailAsync(Windows.Storage.FileProperties.ThumbnailMode.MusicView)).AsStream().AsRandomAccessStream());
-                }
-                catch { }
-                
-                result.Add(new(item, bi));
-            }
-            else
-            {
-                result.Add(new(item, (BitmapImage)this.Resources[(object)"FolderImage"]));
-            }
-        }
-
-        return result;
     }
 
     private static List<FileSystemInfo> GetDirectoryDatas(DirectoryInfo di)
@@ -466,17 +746,19 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         IsSelectDirectory = false;
         IsSelectFile = false;
         var senderconved = ((ListViewItem)sender);
-        var dpv = Clipboard.GetContent();
-        // Get files
-        try
-        {
-            var items = await dpv.GetStorageItemsAsync();
-            if (items.Count > 0)
-            {
-                CanPaste = true;
-            }
-        }
-        catch { }
+        //try
+        //{
+        //    var dpv = Clipboard.GetContent();
+        //    if(dpv.Contains("Preferred DropEffect"))
+        //        Debug.WriteLine(( Convert.ToString(await dpv.GetDataAsync("Preferred DropEffect"))));
+        //    // Get files
+        //    var items = await dpv.GetStorageItemsAsync();
+        //    if (items.Count > 0)
+        //    {
+        //        CanPaste = true;
+        //    }
+        //}
+        //catch { }
         if (senderconved.IsSelected)
         {
             IsSelectdItem = true;
@@ -571,11 +853,35 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     {
         DataPackageView dpv = Clipboard.GetContent();
         var items = await dpv.GetStorageItemsAsync();
-
+        
         foreach(var item in items)
         {
-            
+
         }
+    }
+
+    [RelayCommand]
+    private void OpenInTerminal()
+    {
+        if (!IsSelectdItem)
+        {
+            Process.Start("cmd.exe", $"cd \"{Path}\"");
+        }
+        else
+        {
+            Process.Start("cmd.exe", $"cd \"{((DirectoryItemsData)ListArea.SelectedItem).Info.FullName}\"");
+        }
+    }
+
+    [RelayCommand]
+    private void ShowProperties()
+    {
+        var item = ((DirectoryItemsData)ListArea.SelectedItem);
+        bool isfile = !item.Info.Attributes.HasFlag(System.IO.FileAttributes.Directory);
+        if (isfile)
+            PInvoke.ShellExecute(HWND.Null, "properties", item.Info.FullName, "", "", Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_NORMAL);
+        else
+            PInvoke.ShellExecute(HWND.Null, "properties", "", "", item.Info.FullName, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_NORMAL);
     }
 
     private async void ListViewItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
