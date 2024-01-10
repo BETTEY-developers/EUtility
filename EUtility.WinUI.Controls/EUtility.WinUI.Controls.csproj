@@ -5,8 +5,8 @@
     <RootNamespace>EUtility.WinUI.Controls</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <AssemblyVersion>1.0.2401.240</AssemblyVersion>
-    <FileVersion>1.0.2401.240</FileVersion>
+    <AssemblyVersion>1.0.2401.254</AssemblyVersion>
+    <FileVersion>1.0.2401.254</FileVersion>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -14,7 +14,6 @@
     <None Remove="Files\Dialogs\RenameRepetitive.xaml" />
     <None Remove="Files\Explorer.xaml" />
     <None Remove="Files\FileList.xaml" />
-    <None Remove="Files\PathNavigationBar.xaml" />
     <None Remove="Style\Global.xaml" />
   </ItemGroup>
 
@@ -34,12 +33,6 @@
   <ItemGroup>
     <ProjectReference Include="..\EUtility.RegisterEx\EUtility.RegisterEx.csproj" />
     <ProjectReference Include="..\EUtility.WinUI.Helpers\EUtility.WinUI.Helpers.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Files\PathNavigationBar.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 
   <ItemGroup>
@@ -70,5 +63,9 @@
     <Page Update="Files\Dialogs\RenameRepetitive.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Files\Styles\" />
   </ItemGroup>
 </Project>

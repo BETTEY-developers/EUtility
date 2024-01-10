@@ -13,6 +13,7 @@
                 <NavigationViewItem.MenuItems>
                     <NavigationViewItem x:Uid="NavItem_FileList" Tag="EUtility.Controls.Test.ControlsPage.FileListPage"/>
                     <NavigationViewItem x:Uid="NavItem_Explorer" Tag="EUtility.Controls.Test.ControlsPage.ExplorerPage"/>
+                    <NavigationViewItem Tag="EUtility.Controls.Test.ControlsPage.FlyoutButtonPage">飞出按钮</NavigationViewItem>
                 </NavigationViewItem.MenuItems>
             </NavigationViewItem>
         </NavigationView.MenuItems>

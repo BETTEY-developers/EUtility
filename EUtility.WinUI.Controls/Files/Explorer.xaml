@@ -58,13 +58,28 @@
                         </AppBarButton.Icon>
                     </AppBarButton>
                 </StackPanel>
-                <BreadcrumbBar Grid.Column="1"
-                               BorderBrush="{ThemeResource CircleElevationBorderBrush}"
-                               BorderThickness="1"
-                               CornerRadius="4"
-                               Background="{ThemeResource LayerFillColorAltBrush}"
-                               Height="65">
-                </BreadcrumbBar>
+                <Grid Height="auto"
+                      Margin="5,6"
+                      Grid.Column="1"
+                      BorderBrush="{ThemeResource TextControlElevationBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="4"
+                      Background="{ThemeResource LayerFillColorAltBrush}">
+                    <BreadcrumbBar Grid.Column="1"  
+                                   ItemsSource="{x:Bind Source}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Left"
+                                   Margin="10,0,10,0" >
+                        <BreadcrumbBar.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <BreadcrumbBarItem>
+                                    
+                                </BreadcrumbBarItem>
+                            </DataTemplate>
+                        </BreadcrumbBar.ItemTemplate>
+                    </BreadcrumbBar>
+                </Grid>
+
                 <TextBox Grid.Column="2" Margin="0,6.5" PlaceholderText="搜索"/>
             </Grid>
             <Grid Grid.Row="1"
