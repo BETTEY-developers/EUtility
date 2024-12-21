@@ -298,6 +298,8 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
 
     private bool _NonHandle = false;
 
+    private bool _NonHandleOld = false;
+
     private async void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
         Root.Height = ((FrameworkElement)Parent).Height;
@@ -434,12 +436,17 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             var item = l[i];
             if (item.Attributes.HasFlag(System.IO.FileAttributes.Directory))
                 continue;
-
-            hc += (int)item.FullName.Sum(x => (decimal)x) +
-                  (int)Math.Floor((double)(item.LastWriteTime.Ticks / 32768)) +
-                  (int)Math.Floor((double)(item.CreationTime.Ticks / 32768)) +
-                  (int)item.Extension.Sum(x => (decimal)x);
+            hc = GetFileSystemItemHashCode(hc, item);
         }
+        return hc;
+    }
+
+    private static int GetFileSystemItemHashCode(int hc, FileSystemInfo item)
+    {
+        hc += (int)item.FullName.Sum(x =>(decimal)x) +
+              (int)Math.Floor((double)(item.LastWriteTime.Ticks / 32768)) +
+              (int)Math.Floor((double)(item.CreationTime.Ticks / 32768)) +
+              (int)item.Extension.Sum(x => (decimal)x);
         return hc;
     }
 
@@ -471,7 +478,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             {
                 flag = 2;
             }
-            else if (_cacheItems[Path].Item2 != SortGroup ||
+            if (_cacheItems[Path].Item2 != SortGroup ||
                      _cacheItems[Path].Item3 != SortBaseElement ||
                      _cacheItems[Path].Item4 != SortOrder)
             {
@@ -489,11 +496,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             {
                 case ItemSortGroup.None:
                     {
-                        var noneitems =
-                            (from i in list
-                            where !i.Attributes.HasFlag(System.IO.FileAttributes.Directory)
-                            select i)
-                            .ToList();
+                        var noneitems = list.ToList();
                         noneitems.Sort(comparison);
                         result = noneitems;
                         break;
@@ -565,15 +568,12 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
             var items = _cacheItems[Path].Item1;
 
             ObservableCollection<DirectoryItemsData> finaresult = new();
-            for(int i = 0; i < items.Count; i++)
-            {
-                finaresult.Add(new());
-            }
 
             
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < result.Count; i++)
             {
-                finaresult[IndexOf(x => x == items[i].Info, items)] = items[i];
+                var org = items.First(x=>GetFileSystemItemHashCode(0, x.Info) == GetFileSystemItemHashCode(0,result[i]));
+                finaresult.Add(new(result[i], org.Icon));
             }
 
             _cacheItems[Path] = (finaresult, SortGroup, SortBaseElement, SortOrder);
@@ -727,6 +727,7 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
     private static List<FileSystemInfo> GetDirectoryDatas(DirectoryInfo di)
     {
         List<FileSystemInfo> list = new();
+        
         foreach (var item in di.EnumerateFiles())
         {
             list.Add(item);
@@ -746,19 +747,6 @@ public sealed partial class FileList : UserControl, IResult<StorageFile>
         IsSelectDirectory = false;
         IsSelectFile = false;
         var senderconved = ((ListViewItem)sender);
-        //try
-        //{
-        //    var dpv = Clipboard.GetContent();
-        //    if(dpv.Contains("Preferred DropEffect"))
-        //        Debug.WriteLine(( Convert.ToString(await dpv.GetDataAsync("Preferred DropEffect"))));
-        //    // Get files
-        //    var items = await dpv.GetStorageItemsAsync();
-        //    if (items.Count > 0)
-        //    {
-        //        CanPaste = true;
-        //    }
-        //}
-        //catch { }
         if (senderconved.IsSelected)
         {
             IsSelectdItem = true;

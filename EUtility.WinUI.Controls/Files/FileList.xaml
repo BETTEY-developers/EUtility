@@ -153,28 +153,28 @@
                     <AppBarButton.Flyout>
                         <MenuFlyout>
                             <RadioMenuFlyoutItem Text="升序" GroupName="Order" 
-                                                 local:ItemOrderRadio.Target="{x:Bind SortOrder, Mode=OneWay}" local:ItemOrderRadio.TriggerValue="0"/>
+                                                 local:ItemOrderRadio.Target="{x:Bind SortOrder, Mode=TwoWay}" local:ItemOrderRadio.TriggerValue="0"/>
                             <RadioMenuFlyoutItem Text="降序" GroupName="Order" 
-                                                 local:ItemOrderRadio.Target="{x:Bind SortOrder, Mode=OneWay}" local:ItemOrderRadio.TriggerValue="1"/>
+                                                 local:ItemOrderRadio.Target="{x:Bind SortOrder, Mode=TwoWay}" local:ItemOrderRadio.TriggerValue="1"/>
                             <MenuFlyoutSeparator/>
 
                             <RadioMenuFlyoutItem Text="名称" GroupName="SortBaseElement"
-                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=TwoWay}"
                                                  local:ItemSortBaseElementRadio.TriggerValue="0"/>
                             <RadioMenuFlyoutItem Text="创建时间" GroupName="SortBaseElement"
-                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=TwoWay}"
                                                  local:ItemSortBaseElementRadio.TriggerValue="1"/>
                             <RadioMenuFlyoutItem Text="最后修改时间" GroupName="SortBaseElement"
-                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=TwoWay}"
                                                  local:ItemSortBaseElementRadio.TriggerValue="2"/>
                             <RadioMenuFlyoutItem Text="大小" GroupName="SortBaseElement"
-                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=OneWay}"
+                                                 local:ItemSortBaseElementRadio.Target="{x:Bind SortBaseElement, Mode=TwoWay}"
                                                  local:ItemSortBaseElementRadio.TriggerValue="3"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                
-                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=OneWay, Converter={StaticResource BVC}, ConverterParameter=True}"
+
+                <AppBarButton Visibility="{x:Bind IsSelectdItem, Mode=TwoWay, Converter={StaticResource BVC}, ConverterParameter=True}"
                               Label="分组依据">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xF168;" />
@@ -182,13 +182,13 @@
                     <AppBarButton.Flyout>
                         <MenuFlyout>
                             <RadioMenuFlyoutItem Text="无" GroupName="SortGroup"
-                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
+                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=TwoWay}"
                                                  local:ItemSortGroupRadio.TriggerValue="0"/>
                             <RadioMenuFlyoutItem Text="文件夹与文件" GroupName="SortGroup"
-                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
+                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=TwoWay}"
                                                  local:ItemSortGroupRadio.TriggerValue="1"/>
                             <RadioMenuFlyoutItem Text="按文件类型" GroupName="SortGroup"
-                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=OneWay}"
+                                                 local:ItemSortGroupRadio.Target="{x:Bind SortGroup, Mode=TwoWay}"
                                                  local:ItemSortGroupRadio.TriggerValue="2"/>
                         </MenuFlyout>
                     </AppBarButton.Flyout>
@@ -235,19 +235,18 @@
                           ItemsSource="{x:Bind DriveInfos}"
                           ItemTemplate="{StaticResource DriveItem}"
                           Visibility="{x:Bind IsInRoot, Mode=OneWay, Converter={StaticResource VisConverter}}"/>
-            <Grid RowSpacing="5" Visibility="{x:Bind IsInRoot, Mode=OneWay, Converter={StaticResource VisConverter}, ConverterParameter=True}">
+            <Grid Visibility="{x:Bind IsInRoot, Mode=OneWay, Converter={StaticResource VisConverter}, ConverterParameter=True}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0" 
                           Height="48" 
-                          CornerRadius="6" 
+                          CornerRadius="6,6,0,0" 
                           Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                           BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
-                          BorderThickness="1"
-                          Padding="16,14"
-                          ColumnSpacing="5">
+                          BorderThickness="1,1,1,0"
+                          Padding="28,12,24,12">
                     <Grid.Resources>
                         <Style TargetType="TextBlock">
                             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -256,20 +255,29 @@
                     </Grid.Resources>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition Width="0.5*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Uid="FileList_FileName" HorizontalTextAlignment="Center" Grid.ColumnSpan="1" Grid.Column="0"/>
-                    <TextBlock x:Uid="FileList_CreateTime" Grid.Column="2"/>
-                    <TextBlock x:Uid="FileList_LastWroteTime" Grid.Column="3"/>
-                    <TextBlock x:Uid="FileList_FileType" Grid.Column="4"/>
-                    <TextBlock x:Uid="FileList_FileSize" Grid.Column="5"/>
+                    <TextBlock x:Uid="FileList_FileName" HorizontalTextAlignment="Center" Grid.ColumnSpan="2" Grid.Column="0"/>
+                    <TextBlock x:Uid="FileList_CreateTime" Grid.Column="4"/>
+                    <TextBlock x:Uid="FileList_LastWroteTime" Grid.Column="6"/>
+                    <TextBlock x:Uid="FileList_FileType" Grid.Column="8"/>
+                    <TextBlock x:Uid="FileList_FileSize" Grid.Column="10"/>
+                    <Border Height="48" Width="1" HorizontalAlignment="Left" Margin="-8,-12,0,-12" BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}" BorderThickness="1,0" Grid.Column="3"/>
+                    <Border Height="48" Width="1" HorizontalAlignment="Left" Margin="-8,-12,0,-12" BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}" BorderThickness="1,0" Grid.Column="5"/>
+                    <Border Height="48" Width="1" HorizontalAlignment="Left" Margin="-8,-12,0,-12" BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}" BorderThickness="1,0" Grid.Column="7"/>
+                    <Border Height="48" Width="1" HorizontalAlignment="Left" Margin="-8,-12,0,-12" BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}" BorderThickness="1,0" Grid.Column="9"/>
                 </Grid>
                 <ScrollViewer Grid.Row="1" 
-                              CornerRadius="6" 
+                              CornerRadius="0,0,6,6" 
                               BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
                               BorderThickness="1">
                     <ListView x:Name="ListArea"

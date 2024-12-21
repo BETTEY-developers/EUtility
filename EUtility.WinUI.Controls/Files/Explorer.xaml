@@ -23,11 +23,17 @@
                   BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" 
                   BorderThickness="0,0,0,1">
                 <Grid.Resources>
-                    <Style TargetType="AppBarButton">
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#22111111"/>
+                    <SolidColorBrush x:Key="ButtonBackground" Color="#00000000"/>
+                    <Style TargetType="Button">
                         <Setter Property="Width" Value="40"/>
                         <Setter Property="Height" Value="40"/>
                         <Setter Property="Margin" Value="0,0,0,0"/>
-                        <Setter Property="CornerRadius" Value="10"/>
+                        <Setter Property="CornerRadius" Value="4"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                    <Style TargetType="FontIcon">
+                        <Setter Property="FontSize" Value="16"/>
                     </Style>
                 </Grid.Resources>
                 <Grid.ColumnDefinitions>
@@ -36,8 +42,20 @@
                     <ColumnDefinition Width="230"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal"
-                            Spacing="5">
-                    <AppBarButton>
+                            Spacing="3">
+                    <Button>
+                        <FontIcon Glyph="&#xE72B;" />
+                    </Button>
+                    <Button>
+                        <FontIcon Glyph="&#xE72A;" />
+                    </Button>
+                    <Button>
+                        <FontIcon Glyph="&#xE74A;" />
+                    </Button>
+                    <Button>
+                        <FontIcon Glyph="&#xE72C;" />
+                    </Button>
+                    <!--<AppBarButton>
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE72B;" />
                         </AppBarButton.Icon>
@@ -56,7 +74,7 @@
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE72C;" />
                         </AppBarButton.Icon>
-                    </AppBarButton>
+                    </AppBarButton>-->
                 </StackPanel>
                 <Grid Height="auto"
                       Margin="5,6"
@@ -87,7 +105,7 @@
                   BorderThickness="0,0,0,1">
             </Grid>
             <Grid Grid.Row="2">
-                <wwcf:FileList VerticalAlignment="Stretch" Path="C:\" Height="auto"/>
+                <wwcf:FileList VerticalAlignment="Stretch" Path="D:\" Height="auto"/>
             </Grid>
         </Grid>
     </NavigationView>
