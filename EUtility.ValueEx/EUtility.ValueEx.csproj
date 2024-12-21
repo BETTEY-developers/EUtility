@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <Version>1.0.1</Version>
     <PackageOutputPath>C:\Users\Administrator.DESKTOP-38EEGUF\source\CustomNuget\</PackageOutputPath>
+    <Title>Better Value Types</Title>
+    <Description>A package for better, useful, wideful value types.</Description>
+    <Copyright>Bettey Elipese Copyright 2024</Copyright>
   </PropertyGroup>
 
 </Project>
