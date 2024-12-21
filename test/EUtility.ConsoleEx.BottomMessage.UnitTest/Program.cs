@@ -1,4 +1,4 @@
-﻿namespace EUtility.ConsoleEx.Message.UnitTest;
+namespace EUtility.ConsoleEx.Message.UnitTest;
 
 using EUtility.ConsoleEx.Message;
 using EUtility.StringEx.StringExtension;
