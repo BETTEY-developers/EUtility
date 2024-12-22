@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\console\EUtility.ConsoleEx.BottomMessage\EUtility.ConsoleEx.BottomMessage.csproj" />
+    <ProjectReference Include="..\..\lib\EUtility.UnitTestLib.LogTest\EUtility.UnitTestLib.LogTest.csproj" />
+    <ProjectReference Include="..\..\lib\EUtility.UnitTestLib.ObjectProperty\EUtility.UnitTestLib.ObjectProperty.csproj" />
+  </ItemGroup>
+
+</Project>

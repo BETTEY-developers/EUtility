@@ -42,9 +42,6 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EUtility.WinUI.Controls\EUtility.WinUI.Controls.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="ControlsPage\FileListPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -69,5 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Remove="ControlsPage\FlyoutButtonPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\winui\EUtility.WinUI.Controls\EUtility.WinUI.Controls.csproj" />
   </ItemGroup>
 </Project>

@@ -9,11 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{D2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{73AE900D-FA4C-4270-BB95-45D792DA5410}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Message", "src\EUtility.ConsoleEx.BottomMessage\EUtility.ConsoleEx.BottomMessage.csproj", "{69DCA039-C79D-4E1E-BDF5-EAA00D54A14B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Message", "src\console\EUtility.ConsoleEx.BottomMessage\EUtility.ConsoleEx.BottomMessage.csproj", "{69DCA039-C79D-4E1E-BDF5-EAA00D54A14B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Menu", "src\EUtility.ConsoleEx.Menu\EUtility.ConsoleEx.Menu.csproj", "{55DEF277-300B-40C6-8C69-8FEC98610643}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Menu", "src\console\EUtility.ConsoleEx.Menu\EUtility.ConsoleEx.Menu.csproj", "{55DEF277-300B-40C6-8C69-8FEC98610643}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Message.UnitTest", "test\EUtility.ConsoleEx.BottomMessage.UnitTest\EUtility.ConsoleEx.BottomMessage.UnitTest.csproj", "{3B23908B-4ECE-4CCC-A5C2-AC7455E666EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConsoleEx.Message.UnitTest", "test\tests\EUtility.ConsoleEx.BottomMessage.UnitTest\EUtility.ConsoleEx.BottomMessage.UnitTest.csproj", "{3B23908B-4ECE-4CCC-A5C2-AC7455E666EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTestLib", "UnitTestLib", "{6C624FEB-2B77-4B43-9144-720566ECD3F6}"
 EndProject
@@ -23,45 +23,45 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.UnitTestLib.Object
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Value", "Value", "{A93AFC75-089F-43C9-8ED3-2B1589715566}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.StringEx.StringExtension", "src\EUtility.StringEx.StringExtension\EUtility.StringEx.StringExtension.csproj", "{747EAF00-E8AF-4D49-9918-C4B5D901693E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.StringEx.StringExtension", "src\value\EUtility.StringEx.StringExtension\EUtility.StringEx.StringExtension.csproj", "{747EAF00-E8AF-4D49-9918-C4B5D901693E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Convert", "Convert", "{9841C93B-6235-45A9-9A21-C99E46079EED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConvertEx.Convert", "src\EUtility.ConvertEx.Convert\EUtility.ConvertEx.Convert.csproj", "{3A5505AA-0C58-445F-9F26-140D0F099B2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ConvertEx.Convert", "src\value\EUtility.ConvertEx.Convert\EUtility.ConvertEx.Convert.csproj", "{3A5505AA-0C58-445F-9F26-140D0F099B2E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WinUI", "WinUI", "{E51507D6-BD5C-4625-9195-3E30DE592A45}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.WinUI.Dialogs", "src\EUtility.WinUI.Dialogs\EUtility.WinUI.Dialogs.csproj", "{F97073FD-C7C3-438B-A48F-09CD2D25F222}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.WinUI.Dialogs", "src\winui\EUtility.WinUI.Dialogs\EUtility.WinUI.Dialogs.csproj", "{F97073FD-C7C3-438B-A48F-09CD2D25F222}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.WinUI.Controls", "src\EUtility.WinUI.Controls\EUtility.WinUI.Controls.csproj", "{3BBECF5E-4FF0-457F-8EB6-EC300445BE19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.WinUI.Controls", "src\winui\EUtility.WinUI.Controls\EUtility.WinUI.Controls.csproj", "{3BBECF5E-4FF0-457F-8EB6-EC300445BE19}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{8B880D84-2B97-4B61-AC77-7231782BFB19}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{9C36B32E-9960-4E73-85C6-B96A0045D18C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Controls.Test", "test\EUtility.Controls.Test\EUtility.Controls.Test.csproj", "{3EA67683-E4F9-46D2-B0DB-FB9B60BCA738}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Controls.Test", "test\tests\EUtility.Controls.Test\EUtility.Controls.Test.csproj", "{3EA67683-E4F9-46D2-B0DB-FB9B60BCA738}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RegisterEx", "RegisterEx", "{A264206B-C535-4034-B791-5ED3D7A2FBEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.RegisterEx", "src\EUtility.RegisterEx\EUtility.RegisterEx.csproj", "{3964875C-B05C-4F45-A51A-A8686D56595C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.RegisterEx", "src\register\EUtility.RegisterEx\EUtility.RegisterEx.csproj", "{3964875C-B05C-4F45-A51A-A8686D56595C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtilityCommon", "src\EUtilityCommon\EUtilityCommon.csproj", "{D7007CAB-C1BF-485A-8B68-8432CF6B34D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.WinUI.Helpers", "src\EUtility.WinUI.Helpers\EUtility.WinUI.Helpers.csproj", "{9A828B7F-F47E-4B50-B9CB-427F8347B469}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.WinUI.Helpers", "src\winui\EUtility.WinUI.Helpers\EUtility.WinUI.Helpers.csproj", "{9A828B7F-F47E-4B50-B9CB-427F8347B469}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ValueEx", "src\EUtility.ValueEx\EUtility.ValueEx.csproj", "{68EBC56D-AE92-4C02-B003-2EEAAFD06E69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.ValueEx", "src\value\EUtility.ValueEx\EUtility.ValueEx.csproj", "{68EBC56D-AE92-4C02-B003-2EEAAFD06E69}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Data", "src\EUtility.Data\EUtility.Data.csproj", "{0AA679FD-AD37-4AF3-8E0A-3674F290F2F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Data", "src\data\EUtility.Data\EUtility.Data.csproj", "{0AA679FD-AD37-4AF3-8E0A-3674F290F2F4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{5755C057-0BAF-4E16-BB27-00FD9757D965}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.LowOperations", "src\EUtility.LowOperations\EUtility.LowOperations.csproj", "{01A5011B-5DA7-45B7-8FA9-6160DD6BFB7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.LowOperations", "src\data\EUtility.LowOperations\EUtility.LowOperations.csproj", "{01A5011B-5DA7-45B7-8FA9-6160DD6BFB7F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Numeric", "src\EUtility.Numeric\EUtility.Numeric.csproj", "{DF9C381E-7588-43A0-BB67-87B5AA7360D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EUtility.Numeric", "src\value\EUtility.Numeric\EUtility.Numeric.csproj", "{DF9C381E-7588-43A0-BB67-87B5AA7360D5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{CC0529B0-7AD3-47D6-B0E1-7AED54B122B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EUtility.ValueEx.Test", "test\EUtility.ValueEx.Test\EUtility.ValueEx.Test.csproj", "{CF371970-08AA-4634-BD52-A9C9D12376C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EUtility.ValueEx.Test", "test\tests\EUtility.ValueEx.Test\EUtility.ValueEx.Test.csproj", "{CF371970-08AA-4634-BD52-A9C9D12376C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

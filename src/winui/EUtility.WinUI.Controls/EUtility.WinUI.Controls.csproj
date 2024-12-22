@@ -5,8 +5,8 @@
     <RootNamespace>EUtility.WinUI.Controls</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <AssemblyVersion>1.0.2402.285</AssemblyVersion>
-    <FileVersion>1.0.2402.285</FileVersion>
+    <AssemblyVersion>1.0.2412.286</AssemblyVersion>
+    <FileVersion>1.0.2412.286</FileVersion>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EUtility.RegisterEx\EUtility.RegisterEx.csproj" />
+    <ProjectReference Include="..\..\register\EUtility.RegisterEx\EUtility.RegisterEx.csproj" />
     <ProjectReference Include="..\EUtility.WinUI.Helpers\EUtility.WinUI.Helpers.csproj" />
   </ItemGroup>
 
